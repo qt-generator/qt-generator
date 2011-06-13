@@ -2033,6 +2033,8 @@ QString AbstractMetaBuilder::translateDefaultValue(ArgumentModelItem item, Abstr
             return "null";
         } else if (expr == "QString()") {
             return "null";
+        } else if (expr == "QChar()") {
+            return "'\\0'";
         } else if (expr.endsWith(")") && expr.contains("::")) {
             TypeEntry *typeEntry = TypeDatabase::instance()->findType(expr.left(expr.indexOf("::")));
             if (typeEntry)
