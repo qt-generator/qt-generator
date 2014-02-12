@@ -210,7 +210,7 @@ void Wrapper::assignVariables() {
 }
 
 int Wrapper::runJambiGenerator() {
-    printf("Running the Qt Jambi Generator. Please wait while source files are being generated...\n");
+    printf("Running the Qt Generator. Please wait while source files are being generated...\n");
 
     //parse the type system file
     if (!TypeDatabase::instance()->parseFile(typesystemFileName, inputDirectoryList))
@@ -253,7 +253,7 @@ void Wrapper::displayHelp(GeneratorSet* generatorSet) {
 #else
     char path_splitter = ':';
 #endif
-    printf("Usage:\n  generator [options] header-file typesystem-file\n\n");
+    printf("Usage:\n  qt-generator [options] header-file typesystem-file\n\n");
     printf("Available options:\n\n");
     printf("General:\n");
     printf("  --debug-level=[types|sparse|medium|full]  \n"
