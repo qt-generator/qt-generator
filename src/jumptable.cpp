@@ -43,7 +43,7 @@
 ****************************************************************************/
 
 #include "jumptable.h"
-#include "cppimplgenerator.h"
+#include "lang-java/cppimplgenerator.h"
 #include "reporthandler.h"
 #include "fileout.h"
 
