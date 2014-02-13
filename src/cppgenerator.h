@@ -45,8 +45,8 @@
 #ifndef CPPGENERATOR_H
 #define CPPGENERATOR_H
 
+#include "abstractmetalang.h"
 #include "generator.h"
-#include "metajava.h"
 #include "prigenerator.h"
 
 class CppGenerator : public Generator {

@@ -42,9 +42,8 @@
 **
 ****************************************************************************/
 
+#include "abstractmetalang.h"
 #include "customtypes.h"
-
-#include "metajava.h"
 
 #include <QtCore/QDebug>
 #include <QtCore/QTextStream>

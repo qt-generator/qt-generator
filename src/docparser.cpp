@@ -44,7 +44,7 @@
 
 #include "docparser.h"
 
-#include "metajava.h"
+#include "abstractmetalang.h"
 #include "reporthandler.h"
 
 #include <QtCore/QFileInfo>

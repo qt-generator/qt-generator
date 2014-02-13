@@ -45,7 +45,7 @@
 #ifndef UICONVERTER_H
 #define UICONVERTER_H
 
-#include "metajava.h"
+#include "abstractmetalang.h"
 
 #include <QtXml>
 

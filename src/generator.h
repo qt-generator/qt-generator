@@ -45,7 +45,7 @@
 #ifndef GENERATOR_H
 #define GENERATOR_H
 
-#include "metajava.h"
+#include "abstractmetalang.h"
 #include "typesystem/typesystem.h"
 
 #include "codemodel.h"

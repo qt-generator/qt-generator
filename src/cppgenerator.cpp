@@ -42,10 +42,9 @@
 **
 ****************************************************************************/
 
+#include "abstractmetalang.h"
 #include "cppgenerator.h"
 #include "reporthandler.h"
-
-#include "metajava.h"
 
 // ### There's a bug in Qt causing it to fail at normalizing signatures
 // on the form FooBar<T> const&, which is the form the C++ parser uses

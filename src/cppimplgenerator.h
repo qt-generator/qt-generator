@@ -45,8 +45,8 @@
 #ifndef CPPIMPLGENERATOR_H
 #define CPPIMPLGENERATOR_H
 
+#include "abstractmetalang.h"
 #include "cppgenerator.h"
-#include "metajava.h"
 
 enum JNISignatureFormat {
     Underscores,        //!< Used in the jni exported function names

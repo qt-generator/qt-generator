@@ -45,8 +45,8 @@
 #ifndef CPP_HEADER_GENERATOR
 #define CPP_HEADER_GENERATOR
 
+#include "abstractmetalang.h"
 #include "cppgenerator.h"
-#include "metajava.h"
 
 class CppHeaderGenerator : public CppGenerator {
         Q_OBJECT

@@ -45,8 +45,8 @@
 #ifndef QDOC_GENERATOR
 #define QDOC_GENERATOR
 
+#include "abstractmetalang.h"
 #include "javagenerator.h"
-#include "metajava.h"
 
 class QDocGenerator: public JavaGenerator {
     public:
