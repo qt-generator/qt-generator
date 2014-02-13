@@ -43,3 +43,12 @@
 ****************************************************************************/
 
 #include "metajava.h"
+#include "jumptable.h"
+
+bool MetaJavaFunction::needsCallThrough() const {
+    if (ownerClass()->isInterface())
+        return false;
+    if (JumpTableGenerator::isJumpTableActive())
+        return true;
+    return AbstractMetaFunction::needsCallThrough();
+}

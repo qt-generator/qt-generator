@@ -11,7 +11,6 @@ SET(qt_generator_SOURCES
     fileout.cpp
     generator.cpp
     generatorset.cpp
-    jumptable.cpp
     main.cpp
     preprocesshandler.cpp
     prigenerator.cpp
@@ -27,6 +26,7 @@ SET(qt_generator_SOURCES
     lang-java/cppimplgenerator.cpp
     lang-java/generatorsetjava.cpp
     lang-java/javagenerator.cpp
+    lang-java/jumptable.cpp
     lang-java/metainfogenerator.cpp
     lang-java/metajava.cpp
     lang-java/metajavabuilder.cpp
@@ -69,7 +69,6 @@ SET(qt_generator_HEADERS
     fileout.h
     generator.h
     generatorset.h
-    jumptable.h
     prigenerator.h
 
     lang-java/cppgenerator.h
@@ -77,6 +76,7 @@ SET(qt_generator_HEADERS
     lang-java/cppimplgenerator.h
     lang-java/generatorsetjava.h
     lang-java/javagenerator.h
+    lang-java/jumptable.h
 )
 
 SET(qt_generator_RESOURCES
