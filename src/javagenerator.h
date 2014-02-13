@@ -45,8 +45,8 @@
 #ifndef JAVAGENERATOR_H
 #define JAVAGENERATOR_H
 
+#include "abstractmetalang.h"
 #include "generator.h"
-#include "metajava.h"
 
 #include <QTextStream>
 

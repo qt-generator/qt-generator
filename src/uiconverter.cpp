@@ -43,7 +43,6 @@
 ****************************************************************************/
 
 #include "uiconverter.h"
-#include "metajava.h"
 
 #include "reporthandler.h"
 
