@@ -424,8 +424,7 @@ class AbstractMetaFunction : public AbstractMetaAttributes {
                 m_interface_class(0),
                 m_property_spec(0),
                 m_constant(false),
-                m_invalid(false),
-                m_jumptable_id(-1) {
+                m_invalid(false) {
         }
 
         ~AbstractMetaFunction();
@@ -470,7 +469,7 @@ class AbstractMetaFunction : public AbstractMetaAttributes {
         const AbstractMetaClass *implementingClass() const { return m_implementing_class; }
         void setImplementingClass(const AbstractMetaClass *cls) { m_implementing_class = cls; }
 
-        bool needsCallThrough() const;
+        virtual bool needsCallThrough() const;
 
         AbstractMetaArgumentList arguments() const { return m_arguments; }
         void setArguments(const AbstractMetaArgumentList &arguments) { m_arguments = arguments; }
@@ -544,9 +543,6 @@ class AbstractMetaFunction : public AbstractMetaAttributes {
         void setPropertySpec(QPropertySpec *spec) { m_property_spec = spec; }
         QPropertySpec *propertySpec() const { return m_property_spec; }
 
-        int jumpTableId() const { return m_jumptable_id; }
-        void setJumpTableId(int id) { m_jumptable_id = id; }
-
     private:
         QString m_name;
         QString m_original_name;
@@ -563,7 +559,6 @@ class AbstractMetaFunction : public AbstractMetaAttributes {
         AbstractMetaArgumentList m_arguments;
     uint m_constant                 : 1;
     uint m_invalid                  : 1;
-        int m_jumptable_id;
 };
 
 

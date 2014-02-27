@@ -42,4 +42,48 @@
 **
 ****************************************************************************/
 
-#include "metajava.h"
+#ifndef METAJAVA_H
+#define METAJAVA_H
+
+#include "abstractmetalang.h"
+
+class MetaJavaClass;
+class MetaJavaField;
+class MetaJavaFunction;
+class MetaJavaType;
+class MetaJavaVariable;
+class MetaJavaArgument;
+class MetaJavaEnumValue;
+class MetaJavaEnum;
+
+
+
+class MetaJavaType : public AbstractMetaType {};
+
+class MetaJavaArgument : public AbstractMetaArgument {};
+
+class MetaJavaField : public AbstractMetaField {};
+
+class MetaJavaFunction : public AbstractMetaFunction {
+    public:
+        MetaJavaFunction()
+              : AbstractMetaFunction(),
+                m_jumptable_id(-1) {
+        }
+
+        int jumpTableId() const { return m_jumptable_id; }
+        void setJumpTableId(int id) { m_jumptable_id = id; }
+
+        /*override*/ bool needsCallThrough() const;
+
+    private:
+        int m_jumptable_id;
+};
+
+class MetaJavaEnumValue : public AbstractMetaEnumValue {};
+
+class MetaJavaEnum : public AbstractMetaEnum {};
+
+class MetaJavaClass : public AbstractMetaClass {};
+
+#endif // METAJAVA_H

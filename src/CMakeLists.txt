@@ -6,30 +6,31 @@ SET(qt_generator_SOURCES
     abstractmetabuilder.cpp
     abstractmetalang.cpp
     asttoxml.cpp
-    classlistgenerator.cpp
-    cppgenerator.cpp
-    cppheadergenerator.cpp
-    cppimplgenerator.cpp
     customtypes.cpp
     docparser.cpp
     fileout.cpp
     generator.cpp
     generatorset.cpp
-    generatorsetjava.cpp
-    javagenerator.cpp
-    jumptable.cpp
     main.cpp
-    metainfogenerator.cpp
-    metajava.cpp
-    metajavabuilder.cpp
     preprocesshandler.cpp
     prigenerator.cpp
-    qdocgenerator.cpp
     reporthandler.cpp
     typeparser.cpp
     uiconverter.cpp
     util.cpp
     wrapper.cpp
+
+    lang-java/classlistgenerator.cpp
+    lang-java/cppgenerator.cpp
+    lang-java/cppheadergenerator.cpp
+    lang-java/cppimplgenerator.cpp
+    lang-java/generatorsetjava.cpp
+    lang-java/javagenerator.cpp
+    lang-java/jumptable.cpp
+    lang-java/metainfogenerator.cpp
+    lang-java/metajava.cpp
+    lang-java/metajavabuilder.cpp
+    lang-java/qdocgenerator.cpp
 
     parser/ast.cpp
     parser/binder.cpp
@@ -65,16 +66,17 @@ SET(qt_generator_SOURCES
 )
 
 SET(qt_generator_HEADERS
-    cppgenerator.h
-    cppheadergenerator.h
-    cppimplgenerator.h
     fileout.h
     generator.h
     generatorset.h
-    generatorsetjava.h
-    javagenerator.h
-    jumptable.h
     prigenerator.h
+
+    lang-java/cppgenerator.h
+    lang-java/cppheadergenerator.h
+    lang-java/cppimplgenerator.h
+    lang-java/generatorsetjava.h
+    lang-java/javagenerator.h
+    lang-java/jumptable.h
 )
 
 SET(qt_generator_RESOURCES

@@ -44,6 +44,7 @@
 
 #include "jumptable.h"
 #include "cppimplgenerator.h"
+#include "metajava.h"
 #include "reporthandler.h"
 #include "fileout.h"
 
@@ -197,11 +198,12 @@ QString JumpTablePreprocessor::signature(const AbstractMetaFunction *func) {
 
 
 void JumpTablePreprocessor::process(AbstractMetaFunction *func, SignatureTable *table) {
-    if (!func->needsCallThrough())
+    MetaJavaFunction * java_func = (MetaJavaFunction *)func;
+    if (!java_func->needsCallThrough())
         return;
 
 
-    if (func->jumpTableId() >= 0) {
+    if (java_func->jumpTableId() >= 0) {
 //         printf("%s::%s already has an ID=%d, for declaring=%s, owner=%s\n",
 //                qPrintable(func->implementingClass()->name()),
 //                qPrintable(func->signature()),
@@ -211,11 +213,11 @@ void JumpTablePreprocessor::process(AbstractMetaFunction *func, SignatureTable *
         return;
     }
 
-    QString sig = signature(func);
+    QString sig = signature(java_func);
 
     AbstractMetaFunctionList &list = (*table)[sig];
-    list.append(func);
-    func->setJumpTableId(list.size());
+    list.append(java_func);
+    java_func->setJumpTableId(list.size());
 }
 
 
@@ -315,7 +317,8 @@ void JumpTableGenerator::generateNativeTable(const QString &packageName,
         AbstractMetaFunctionList functions = sit.value();
         bool hasReturn = signature.at(0) != 'V';
 
-        foreach(AbstractMetaFunction *f, functions) {
+        foreach(AbstractMetaFunction *mf, functions) {
+            const MetaJavaFunction * f = (const MetaJavaFunction *)mf;
             const AbstractMetaClass *cls = f->ownerClass();
             s << endl
             << "// " << cls->name() << "::" << f->signature() << ", declaring=" << f->declaringClass()->name() << ", implementing=" << f->implementingClass()->name() << endl

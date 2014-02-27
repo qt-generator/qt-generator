@@ -42,34 +42,13 @@
 **
 ****************************************************************************/
 
-#ifndef METAJAVA_H
-#define METAJAVA_H
+#include "metajava.h"
+#include "jumptable.h"
 
-#include "abstractmetalang.h"
-
-class MetaJavaClass;
-class MetaJavaField;
-class MetaJavaFunction;
-class MetaJavaType;
-class MetaJavaVariable;
-class MetaJavaArgument;
-class MetaJavaEnumValue;
-class MetaJavaEnum;
-
-
-
-class MetaJavaType : public AbstractMetaType {};
-
-class MetaJavaArgument : public AbstractMetaArgument {};
-
-class MetaJavaField : public AbstractMetaField {};
-
-class MetaJavaFunction : public AbstractMetaFunction {};
-
-class MetaJavaEnumValue : public AbstractMetaEnumValue {};
-
-class MetaJavaEnum : public AbstractMetaEnum {};
-
-class MetaJavaClass : public AbstractMetaClass {};
-
-#endif // METAJAVA_H
+bool MetaJavaFunction::needsCallThrough() const {
+    if (ownerClass()->isInterface())
+        return false;
+    if (JumpTableGenerator::isJumpTableActive())
+        return true;
+    return AbstractMetaFunction::needsCallThrough();
+}

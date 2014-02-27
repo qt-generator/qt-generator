@@ -46,6 +46,7 @@
 #include "reporthandler.h"
 #include "docparser.h"
 #include "jumptable.h"
+#include "metajava.h"
 
 #include <QtCore/QDir>
 #include <QtCore/QTextStream>
@@ -463,7 +464,8 @@ void JavaGenerator::writeInjectedCode(QTextStream &s, const AbstractMetaFunction
 }
 
 
-void JavaGenerator::writeJavaCallThroughContents(QTextStream &s, const AbstractMetaFunction *java_function, uint attributes) {
+void JavaGenerator::writeJavaCallThroughContents(QTextStream &s, const AbstractMetaFunction *meta_function, uint attributes) {
+    const MetaJavaFunction * java_function = (const MetaJavaFunction *)meta_function;
     writeInjectedCode(s, java_function, CodeSnip::Beginning);
 
     if (java_function->implementingClass()->isQObject()
@@ -938,8 +940,9 @@ void JavaGenerator::writeReferenceCount(QTextStream &s, const ReferenceCount &re
     s << INDENT << "}" << endl;
 }
 
-void JavaGenerator::writeFunction(QTextStream &s, const AbstractMetaFunction *java_function,
+void JavaGenerator::writeFunction(QTextStream &s, const AbstractMetaFunction *meta_function,
                                   uint included_attributes, uint excluded_attributes) {
+    const MetaJavaFunction * java_function = (const MetaJavaFunction *)meta_function;
     s << endl;
     if (java_function->isModifiedRemoved(TypeSystem::TargetLangCode))
         return ;
@@ -2103,8 +2106,9 @@ void JavaGenerator::writeFunctionAttributes(QTextStream &s, const AbstractMetaFu
     }
 }
 
-void JavaGenerator::writeConstructorContents(QTextStream &s, const AbstractMetaFunction *java_function) {
+void JavaGenerator::writeConstructorContents(QTextStream &s, const AbstractMetaFunction *meta_function) {
     // Write constructor
+    const MetaJavaFunction * java_function = (const MetaJavaFunction *)meta_function;
     s << "{" << endl;
     {
         Indentation indent(INDENT);

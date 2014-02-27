@@ -44,7 +44,6 @@
 
 #include "abstractmetalang.h"
 #include "reporthandler.h"
-#include "jumptable.h"
 #include "typesystem/typedatabase.h"
 
 /*******************************************************************************
@@ -170,8 +169,6 @@ bool AbstractMetaFunction::needsCallThrough() const {
     if (referenceCounts(implementingClass()).size() > 0)
         return true;
     if (argumentsHaveNativeId() || !isStatic())
-        return true;
-    if (JumpTableGenerator::isJumpTableActive())
         return true;
 
     foreach(const AbstractMetaArgument *arg, arguments()) {
