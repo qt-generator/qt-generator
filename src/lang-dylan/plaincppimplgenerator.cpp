@@ -34,7 +34,7 @@
 **
 ****************************************************************************/
 
-#include "cppimplgenerator.h"
+#include "plaincppimplgenerator.h"
 #include "reporthandler.h"
 #include <qnativepointer.h>
 
@@ -47,7 +47,7 @@
 
 static Indentor INDENT;
 
-QString jni_signature(const AbstractMetaFunction *function, JNISignatureFormat format) {
+QString c_signature(const AbstractMetaFunction *function, JNISignatureFormat format) {
     QString returned = "(";
     AbstractMetaArgumentList arguments = function->arguments();
     foreach(const AbstractMetaArgument *argument, arguments) {
@@ -55,9 +55,9 @@ QString jni_signature(const AbstractMetaFunction *function, JNISignatureFormat f
             QString modified_type = function->typeReplaced(argument->argumentIndex() + 1);
 
             if (modified_type.isEmpty())
-                returned += jni_signature(argument->type(), format);
+                returned += c_signature(argument->type(), format);
             else
-                returned += jni_signature(modified_type, format);
+                returned += c_signature(modified_type, format);
         }
     }
 
@@ -65,14 +65,14 @@ QString jni_signature(const AbstractMetaFunction *function, JNISignatureFormat f
 
     QString modified_type = function->typeReplaced(0);
     if (modified_type.isEmpty())
-        returned += jni_signature(function->type(), format);
+        returned += c_signature(function->type(), format);
     else
-        returned += jni_signature(modified_type, format);
+        returned += c_signature(modified_type, format);
 
     return returned;
 }
 
-QString jni_signature(const QString &_full_name, JNISignatureFormat format) {
+QString c_signature(const QString &_full_name, JNISignatureFormat format) {
     QString signature;
     QString full_name = _full_name;
 
@@ -117,12 +117,12 @@ QString jni_signature(const QString &_full_name, JNISignatureFormat format) {
     return signature;
 }
 
-QString jni_signature(const AbstractMetaType *java_type, JNISignatureFormat format) {
+QString c_signature(const AbstractMetaType *java_type, JNISignatureFormat format) {
     if (!java_type)
         return "V";
 
     if (java_type->isArray()) {
-        return "_3" + jni_signature(java_type->arrayElementType(), format);
+        return "_3" + c_signature(java_type->arrayElementType(), format);
     } else if (java_type->isNativePointer()) {
         if (format == Underscores)
             return "Lcom_trolltech_qt_QNativePointer_2";
@@ -152,12 +152,12 @@ QString jni_signature(const AbstractMetaType *java_type, JNISignatureFormat form
         name = ft->originator()->javaQualifier() + "$" + ft->targetLangName();
     }
 
-    return jni_signature((java_type->package().isEmpty() ? QString() : java_type->package() + ".") + name, format);
+    return c_signature((java_type->package().isEmpty() ? QString() : java_type->package() + ".") + name, format);
 }
 
 static QHash<QString, QString> table;
-QString default_return_statement_qt(const AbstractMetaType *java_type,
-                                    Generator::Option options = Generator::NoOption) {
+static QString default_return_statement_qt(const AbstractMetaType *java_type,
+                                           Generator::Option options = Generator::NoOption) {
     QString returnStr = ((options & Generator::NoReturnStatement) == 0 ? "return" : "");
     if (!java_type)
         return returnStr;
@@ -202,7 +202,7 @@ QString default_return_statement_qt(const AbstractMetaType *java_type,
         return returnStr + " 0";
 }
 
-QString default_return_statement_java(const AbstractMetaType *java_type) {
+static QString default_return_statement_java(const AbstractMetaType *java_type) {
     if (!java_type)
         return "return";
     if (java_type->isArray())
@@ -230,7 +230,7 @@ QString default_return_statement_java(const AbstractMetaType *java_type) {
 
 /* Used to decide how which of the Call[Xxx]Method functions to call
  */
-QByteArray jniTypeName(const QString &name) {
+QByteArray cTypeName(const QString &name) {
     static QHash<QString, const char *> table;
     if (table.isEmpty()) {
         table["jboolean"] = "Boolean";
@@ -247,7 +247,7 @@ QByteArray jniTypeName(const QString &name) {
     return table[name];
 }
 
-QByteArray jniName(const QString &name) {
+QByteArray cName(const QString &name) {
     TypeEntry *entry = TypeDatabase::instance()->findType(name);
     if (entry)
         return entry->jniName().toLatin1();
@@ -255,23 +255,23 @@ QByteArray jniName(const QString &name) {
         return "jobject";
 }
 
-QString CppImplGenerator::jniReturnName(const AbstractMetaFunction *java_function) {
+QString PlainCppImplGenerator::jniReturnName(const AbstractMetaFunction *java_function) {
     QString return_type = translateType(java_function->type(), EnumAsInts);
     QString new_return_type = java_function->typeReplaced(0);
     if (!new_return_type.isEmpty()) {
-        return_type = jniName(new_return_type);
+        return_type = cName(new_return_type);
     }
     return return_type;
 }
 
 
-QByteArray jniTypeName(const AbstractMetaType *java_type) {
+QByteArray cTypeName(const AbstractMetaType *java_type) {
     if (!java_type) {
         return "Void";
     } else if (java_type->isTargetLangChar()) {
         return "Char";
     } else if (java_type->isPrimitive()) {
-        return jniTypeName(java_type->typeEntry()->jniName());
+        return cTypeName(java_type->typeEntry()->jniName());
     } else if (java_type->isIntegerEnum() || java_type->isIntegerFlags()) {
         return "Int";
     } else {
@@ -279,62 +279,64 @@ QByteArray jniTypeName(const AbstractMetaType *java_type) {
     }
 }
 
+#if 0 // JNI -> C TODO
 QByteArray newXxxArray(const AbstractMetaType *java_type) {
-    return "New" + jniTypeName(java_type) + "Array";
+    return "New" + cTypeName(java_type) + "Array";
 }
 
 QByteArray setXxxArrayElement(const AbstractMetaType *java_type) {
     Q_ASSERT(java_type);
-    return "Set" + jniTypeName(java_type) + "ArrayElement";
+    return "Set" + cTypeName(java_type) + "ArrayElement";
 }
 
 QByteArray getXxxArrayElement(const AbstractMetaType *java_type) {
     Q_ASSERT(java_type);
-    return "Get" + jniTypeName(java_type) + "ArrayElement";
+    return "Get" + cTypeName(java_type) + "ArrayElement";
 }
 
 QByteArray getXxxArrayRegion(const AbstractMetaType *java_type) {
     Q_ASSERT(java_type);
-    return "Get" + jniTypeName(java_type) + "ArrayRegion";
+    return "Get" + cTypeName(java_type) + "ArrayRegion";
 }
 
 QByteArray setXxxArrayRegion(const AbstractMetaType *java_type) {
     Q_ASSERT(java_type);
-    return "Set" + jniTypeName(java_type) + "ArrayRegion";
+    return "Set" + cTypeName(java_type) + "ArrayRegion";
 }
 
 QByteArray callXxxMethod(const AbstractMetaType *java_type) {
-    return "Call" + jniTypeName(java_type) + "Method";
+    return "Call" + cTypeName(java_type) + "Method";
 }
 
 QByteArray callXxxMethod(const QString &name) {
     TypeEntry *entry = TypeDatabase::instance()->findType(name);
     if (entry && entry->isPrimitive())
-        return "Call" + jniTypeName(entry->jniName()) + "Method";
+        return "Call" + cTypeName(entry->jniName()) + "Method";
     else
         return "CallObjectMethod";
 }
+#endif
 
-QString jni_function_signature(QString package,
-                               QString class_name,
-                               const QString &function_name,
-                               const QString &return_type,
-                               const QString &mangled_arguments = QString(),
-                               uint options = CppImplGenerator::StandardJNISignature) {
+QString c_function_signature(QString package,
+                             QString class_name,
+                             const QString &function_name,
+                             const QString &return_type,
+                             const QString &mangled_arguments = QString(),
+                             uint options = PlainCppImplGenerator::StandardJNISignature) {
     QString s;
 
-    if (options & CppImplGenerator::ExternC)
+    if (options & PlainCppImplGenerator::ExternC)
         s += "extern \"C\" ";
 
-    if (options & CppImplGenerator::JNIExport)
+    if (options & PlainCppImplGenerator::JNIExport)
         s += "Q_DECL_EXPORT ";
 
-    if (options & CppImplGenerator::ReturnType) {
+    if (options & PlainCppImplGenerator::ReturnType) {
         s += return_type;
         s += " ";
     }
 
-    if (options & CppImplGenerator::JNIExport)
+    if (options & PlainCppImplGenerator::JNIExport)
         s += "JNICALL QTJAMBI_FUNCTION_PREFIX(";
 
     s += "Java_";
@@ -345,17 +347,17 @@ QString jni_function_signature(QString package,
     s += QString(function_name).replace("_", "_1");
     s += mangled_arguments;
 
-    if (options & CppImplGenerator::JNIExport)
+    if (options & PlainCppImplGenerator::JNIExport)
         s += ")";
 
     return s;
 }
 
-QString CppImplGenerator::fileNameForClass(const AbstractMetaClass *java_class) const {
+QString PlainCppImplGenerator::fileNameForClass(const AbstractMetaClass *java_class) const {
     return QString("qtjambishell_%1.cpp").arg(java_class->name());
 }
 
-void CppImplGenerator::writeSignalFunction(QTextStream &s, const AbstractMetaFunction *signal, const AbstractMetaClass *cls,
+void PlainCppImplGenerator::writeSignalFunction(QTextStream &s, const AbstractMetaFunction *signal, const AbstractMetaClass *cls,
         int pos) {
     writeFunctionSignature(s, signal, cls, signalWrapperPrefix(),
                            Option(OriginalName | OriginalTypeDescription),
@@ -412,11 +414,11 @@ void CppImplGenerator::writeSignalFunction(QTextStream &s, const AbstractMetaFun
         writeFinalFunction(s, signal, cls);
 }
 
-bool CppImplGenerator::hasCustomDestructor(const AbstractMetaClass *java_class) const {
+bool PlainCppImplGenerator::hasCustomDestructor(const AbstractMetaClass *java_class) const {
     return !java_class->isQObject() && !java_class->typeEntry()->isValue();
 }
 
-void CppImplGenerator::write(QTextStream &s, const AbstractMetaClass *java_class) {
+void PlainCppImplGenerator::write(QTextStream &s, const AbstractMetaClass *java_class) {
 
     bool shellClass = java_class->generateShellClass();
 
@@ -597,7 +599,7 @@ void CppImplGenerator::write(QTextStream &s, const AbstractMetaClass *java_class
     priGenerator->addSource(pro_file_name, fileNameForClass(java_class));
 }
 
-void CppImplGenerator::writeJavaLangObjectOverrideFunctions(QTextStream &s, const AbstractMetaClass *cls) {
+void PlainCppImplGenerator::writeJavaLangObjectOverrideFunctions(QTextStream &s, const AbstractMetaClass *cls) {
     if (cls->hasHashFunction()) {
         AbstractMetaFunctionList hashcode_functions = cls->queryFunctionsByName("hashCode");
         bool found = false;
@@ -610,7 +612,7 @@ void CppImplGenerator::writeJavaLangObjectOverrideFunctions(QTextStream &s, cons
 
         if (!found) {
             s << endl
-            << INDENT << jni_function_signature(cls->package(), cls->name(), "__qt_hashCode", "jint")
+            << INDENT << c_function_signature(cls->package(), cls->name(), "__qt_hashCode", "jint")
             << "(JNIEnv *__jni_env, jobject, jlong __this_nativeId)" << endl
             << INDENT << "{" << endl;
             {
@@ -640,7 +642,7 @@ void CppImplGenerator::writeJavaLangObjectOverrideFunctions(QTextStream &s, cons
 
         if (!found) {
             s << endl
-            << INDENT << jni_function_signature(cls->package(), cls->name(), "__qt_toString", "jstring")
+            << INDENT << c_function_signature(cls->package(), cls->name(), "__qt_toString", "jstring")
             << "(JNIEnv *__jni_env, jobject, jlong __this_nativeId)" << endl
             << INDENT << "{" << endl;
             {
@@ -656,7 +658,7 @@ void CppImplGenerator::writeJavaLangObjectOverrideFunctions(QTextStream &s, cons
     }
 }
 
-void CppImplGenerator::writeExtraFunctions(QTextStream &s, const AbstractMetaClass *java_class) {
+void PlainCppImplGenerator::writeExtraFunctions(QTextStream &s, const AbstractMetaClass *java_class) {
     const ComplexTypeEntry *class_type = java_class->typeEntry();
     Q_ASSERT(class_type);
 
@@ -668,7 +670,7 @@ void CppImplGenerator::writeExtraFunctions(QTextStream &s, const AbstractMetaCla
     }
 }
 
-void CppImplGenerator::writeToStringFunction(QTextStream &s, const AbstractMetaClass *java_class) {
+void PlainCppImplGenerator::writeToStringFunction(QTextStream &s, const AbstractMetaClass *java_class) {
     FunctionModelItem fun = java_class->hasToStringCapability();
     bool core = java_class->package() == QLatin1String("com.trolltech.qt.core");
     bool qevent = false;
@@ -690,7 +692,7 @@ void CppImplGenerator::writeToStringFunction(QTextStream &s, const AbstractMetaC
 
         s << endl;
         s << "#include <QtCore/QDebug>" << endl;
-        s << jni_function_signature(java_class->package(), java_class->name(), "__qt_toString", "jstring")
+        s << c_function_signature(java_class->package(), java_class->name(), "__qt_toString", "jstring")
         << "(JNIEnv *__jni_env, jobject, jlong __this_nativeId)" << endl
         << INDENT << "{" << endl;
         {
@@ -709,9 +711,9 @@ void CppImplGenerator::writeToStringFunction(QTextStream &s, const AbstractMetaC
     }
 }
 
-void CppImplGenerator::writeCloneFunction(QTextStream &s, const AbstractMetaClass *java_class) {
+void PlainCppImplGenerator::writeCloneFunction(QTextStream &s, const AbstractMetaClass *java_class) {
     s << endl
-    << jni_function_signature(java_class->package(), java_class->name(), "__qt_clone", "jobject") << endl
+    << c_function_signature(java_class->package(), java_class->name(), "__qt_clone", "jobject") << endl
     << "(JNIEnv *__jni_env, jobject, jlong __this_nativeId)" << endl
     << INDENT << "{" << endl;
     {
@@ -727,7 +729,7 @@ void CppImplGenerator::writeCloneFunction(QTextStream &s, const AbstractMetaClas
     s << INDENT << "}" << endl << endl;
 }
 
-void CppImplGenerator::writeShellSignatures(QTextStream &s, const AbstractMetaClass *java_class) {
+void PlainCppImplGenerator::writeShellSignatures(QTextStream &s, const AbstractMetaClass *java_class) {
     bool has_constructors = java_class->hasConstructors();
 
     // Write the function names...
@@ -772,7 +774,7 @@ void CppImplGenerator::writeShellSignatures(QTextStream &s, const AbstractMetaCl
                 s << endl
                 << "/* " << QString("%1").arg(QString::number(pos), 3) << " */ "
                 << "\""
-                << jni_signature(function, SlashesAndStuff)
+                << c_signature(function, SlashesAndStuff)
                 << "\"";
             }
             if (pos >= 0)
@@ -808,7 +810,7 @@ void CppImplGenerator::writeShellSignatures(QTextStream &s, const AbstractMetaCl
                 if (i != 0)
                     s << ",";
                 s << endl << INDENT << "\""
-                << jni_signature(function, SlashesAndStuff)
+                << c_signature(function, SlashesAndStuff)
                 << "\"";
             }
             s << endl << "};" << endl << endl;
@@ -846,7 +848,7 @@ void CppImplGenerator::writeShellSignatures(QTextStream &s, const AbstractMetaCl
     }
 }
 
-void CppImplGenerator::writeQObjectFunctions(QTextStream &s, const AbstractMetaClass *java_class) {
+void PlainCppImplGenerator::writeQObjectFunctions(QTextStream &s, const AbstractMetaClass *java_class) {
     s << "const QMetaObject *" << shellClassName(java_class) << "::initMetaObject(JNIEnv *env, jobject java_object)" << endl
     << "{" << endl
     << "  const QMetaObject *mo = QtDynamicMetaObject::build(env, java_object, " << java_class->qualifiedCppName() << "::metaObject()" << ");" << endl;
@@ -955,7 +957,7 @@ void CppImplGenerator::writeQObjectFunctions(QTextStream &s, const AbstractMetaC
     << "}" << endl << endl;
 }
 
-void CppImplGenerator::writeShellConstructor(QTextStream &s, const AbstractMetaFunction *java_function, int options) {
+void PlainCppImplGenerator::writeShellConstructor(QTextStream &s, const AbstractMetaFunction *java_function, int options) {
     if (java_function->isModifiedRemoved(TypeSystem::ShellCode))
         return;
 
@@ -1003,7 +1005,7 @@ void CppImplGenerator::writeShellConstructor(QTextStream &s, const AbstractMetaF
     s << "}" << endl << endl;
 }
 
-void CppImplGenerator::writeShellDestructor(QTextStream &s, const AbstractMetaClass *java_class) {
+void PlainCppImplGenerator::writeShellDestructor(QTextStream &s, const AbstractMetaClass *java_class) {
     s << shellClassName(java_class) << "::~"
     << shellClassName(java_class) << "()" << endl
     << "{" << endl;
@@ -1116,7 +1118,7 @@ void CppImplGenerator::writeShellDestructor(QTextStream &s, const AbstractMetaCl
     s << "}" << endl << endl;
 }
 
-void CppImplGenerator::writeCodeInjections(QTextStream &s, const AbstractMetaFunction *java_function,
+void PlainCppImplGenerator::writeCodeInjections(QTextStream &s, const AbstractMetaFunction *java_function,
         const AbstractMetaClass *implementor, CodeSnip::Position position,
         TypeSystem::Language language) {
 
@@ -1183,7 +1185,7 @@ static QString function_call_for_ownership(TypeSystem::Ownership owner, const QS
     }
 }
 
-void CppImplGenerator::writeOwnership(QTextStream &s,
+void PlainCppImplGenerator::writeOwnership(QTextStream &s,
                                       const AbstractMetaFunction *java_function,
                                       const QString &var_name,
                                       int var_index,
@@ -1220,7 +1222,7 @@ void CppImplGenerator::writeOwnership(QTextStream &s,
 
 }
 
-void CppImplGenerator::writeShellFunction(QTextStream &s, const AbstractMetaFunction *java_function,
+void PlainCppImplGenerator::writeShellFunction(QTextStream &s, const AbstractMetaFunction *java_function,
         const AbstractMetaClass *implementor, int id) {
     writeFunctionSignature(s, java_function, implementor, QString(), OriginalName);
 
@@ -1310,12 +1312,13 @@ void CppImplGenerator::writeShellFunction(QTextStream &s, const AbstractMetaFunc
                     if (new_return_type.isEmpty()) {
                         s << translateType(function_type);
                     } else {
-                        s << jniName(new_return_type);
+                        s << cName(new_return_type);
                     }
                     s << " " << "__java_return_value = ";	// declaration only
                 }
 
                 s << "__jni_env->";
+#if 0 // JNI -> C TODO
                 if (new_return_type.isEmpty()) {
                     s << callXxxMethod(java_function->type());
                 } else if (!has_function_type) {
@@ -1323,6 +1326,7 @@ void CppImplGenerator::writeShellFunction(QTextStream &s, const AbstractMetaFunc
                 } else {
                     s << callXxxMethod(new_return_type);
                 }
+#endif
 
                 s << "(__java_return_value_object, method_id";
                 if (arguments.size() > 0)
@@ -1442,7 +1446,7 @@ void CppImplGenerator::writeShellFunction(QTextStream &s, const AbstractMetaFunc
 
 // ### kill implementor
 
-void CppImplGenerator::writePublicFunctionOverride(QTextStream &s,
+void PlainCppImplGenerator::writePublicFunctionOverride(QTextStream &s,
         const AbstractMetaFunction *java_function,
         const AbstractMetaClass *implementor) {
     Q_ASSERT(java_function->originalAttributes()
@@ -1461,7 +1465,7 @@ void CppImplGenerator::writePublicFunctionOverride(QTextStream &s,
 }
 
 
-void CppImplGenerator::writeVirtualFunctionOverride(QTextStream &s,
+void PlainCppImplGenerator::writeVirtualFunctionOverride(QTextStream &s,
         const AbstractMetaFunction *java_function,
         const AbstractMetaClass *implementor) {
     Q_ASSERT(!java_function->isFinalInCpp());
@@ -1492,7 +1496,7 @@ void CppImplGenerator::writeVirtualFunctionOverride(QTextStream &s,
 }
 
 
-bool CppImplGenerator::writeBaseClassFunctionCall(QTextStream &s,
+bool PlainCppImplGenerator::writeBaseClassFunctionCall(QTextStream &s,
         const AbstractMetaFunction *java_function,
         const AbstractMetaClass *,
         Option options) {
@@ -1523,7 +1527,7 @@ bool CppImplGenerator::writeBaseClassFunctionCall(QTextStream &s,
 }
 
 
-void CppImplGenerator::writeFunctionName(QTextStream &s,
+void PlainCppImplGenerator::writeFunctionName(QTextStream &s,
         const AbstractMetaFunction *java_function,
         const AbstractMetaClass *java_class,
         uint options) {
@@ -1551,9 +1555,9 @@ void CppImplGenerator::writeFunctionName(QTextStream &s,
                 if (!argument->type()->hasNativeId()) {
                     QString modified_type = java_function->typeReplaced(argument->argumentIndex() + 1);
                     if (modified_type.isEmpty())
-                        args += jni_signature(argument->type(), Underscores);
+                        args += c_signature(argument->type(), Underscores);
                     else
-                        args += jni_signature(modified_type, Underscores);
+                        args += c_signature(modified_type, Underscores);
                 } else {
                     args += "J";
                 }
@@ -1561,12 +1565,12 @@ void CppImplGenerator::writeFunctionName(QTextStream &s,
         }
     }
 
-    s << jni_function_signature(cls->package(), cls->name(), function_name,
-                                return_type, args, options);
+    s << c_function_signature(cls->package(), cls->name(), function_name,
+                              return_type, args, options);
 
 }
 
-void CppImplGenerator::writeFinalFunctionArguments(QTextStream &s, const AbstractMetaFunction *java_function,
+void PlainCppImplGenerator::writeFinalFunctionArguments(QTextStream &s, const AbstractMetaFunction *java_function,
         const QString &java_object_name) {
     bool callThrough = java_function->needsCallThrough();
 
@@ -1604,7 +1608,7 @@ void CppImplGenerator::writeFinalFunctionArguments(QTextStream &s, const Abstrac
     Generates type conversion from Java -> Qt for all the arguments
     that are to be to be passed to the function
 */
-void CppImplGenerator::writeFinalFunctionSetup(QTextStream &s, const AbstractMetaFunction *java_function,
+void PlainCppImplGenerator::writeFinalFunctionSetup(QTextStream &s, const AbstractMetaFunction *java_function,
         const QString &qt_object_name,
         const AbstractMetaClass *cls) {
     // Translate each of the function arguments into qt types
@@ -1635,7 +1639,7 @@ void CppImplGenerator::writeFinalFunctionSetup(QTextStream &s, const AbstractMet
 }
 
 
-void CppImplGenerator::writeFinalFunction(QTextStream &s, const AbstractMetaFunction *java_function,
+void PlainCppImplGenerator::writeFinalFunction(QTextStream &s, const AbstractMetaFunction *java_function,
         const AbstractMetaClass *java_class) {
     Q_ASSERT(java_class);
 
@@ -1767,7 +1771,7 @@ void CppImplGenerator::writeFinalFunction(QTextStream &s, const AbstractMetaFunc
     s << endl << endl;
 }
 
-void CppImplGenerator::writeAssignment(QTextStream &s, const QString &destName, const QString &srcName,
+void PlainCppImplGenerator::writeAssignment(QTextStream &s, const QString &destName, const QString &srcName,
                                        const AbstractMetaType *java_type) {
     if (java_type->isArray()) {
         for (int i = 0; i < java_type->arrayElementCount(); ++i) {
@@ -1779,7 +1783,7 @@ void CppImplGenerator::writeAssignment(QTextStream &s, const QString &destName, 
     }
 }
 
-void CppImplGenerator::writeFieldAccessors(QTextStream &s, const AbstractMetaField *java_field) {
+void PlainCppImplGenerator::writeFieldAccessors(QTextStream &s, const AbstractMetaField *java_field) {
     Q_ASSERT(java_field);
     Q_ASSERT(java_field->isPublic() || java_field->isProtected());
 
@@ -1898,7 +1902,7 @@ void CppImplGenerator::writeFieldAccessors(QTextStream &s, const AbstractMetaFie
     }
 }
 
-void CppImplGenerator::writeFinalDestructor(QTextStream &s, const AbstractMetaClass *cls) {
+void PlainCppImplGenerator::writeFinalDestructor(QTextStream &s, const AbstractMetaClass *cls) {
     if (cls->hasConstructors()) {
         s << INDENT << "static void qtjambi_destructor(void *ptr)" << endl
         << INDENT << "{" << endl;
@@ -1929,7 +1933,7 @@ void CppImplGenerator::writeFinalDestructor(QTextStream &s, const AbstractMetaCl
     }
 }
 
-void CppImplGenerator::writeFinalConstructor(QTextStream &s,
+void PlainCppImplGenerator::writeFinalConstructor(QTextStream &s,
         const AbstractMetaFunction *java_function,
         const QString &qt_object_name,
         const QString &java_object_name) {
@@ -2061,13 +2065,13 @@ void CppImplGenerator::writeFinalConstructor(QTextStream &s,
     s << space << ");" << endl;
 }
 
-void CppImplGenerator::writeSignalInitialization(QTextStream &s, const AbstractMetaClass *java_class) {
+void PlainCppImplGenerator::writeSignalInitialization(QTextStream &s, const AbstractMetaClass *java_class) {
     if (!java_class->isQObject()
             || java_class->cppSignalFunctions().size() == 0) {
         return ;
     }
 
-    s << jni_function_signature(java_class->package(), java_class->name(), "__qt_signalInitialization", "jboolean")
+    s << c_function_signature(java_class->package(), java_class->name(), "__qt_signalInitialization", "jboolean")
     << endl << "(JNIEnv *__jni_env, jobject java_object, jlong ptr, jstring java_signal_name)" << endl
     << "{" << endl
     << "   QtJambiLink *link = (QtJambiLink *) ptr;" << endl
@@ -2104,7 +2108,7 @@ void CppImplGenerator::writeSignalInitialization(QTextStream &s, const AbstractM
     << "}" << endl;
 }
 
-QString CppImplGenerator::fromObject(const TypeEntry *entry,
+QString PlainCppImplGenerator::fromObject(const TypeEntry *entry,
                                      const QString &var_name) {
     QString returned;
     QString package = entry->javaPackage();
@@ -2119,7 +2123,7 @@ QString CppImplGenerator::fromObject(const TypeEntry *entry,
     } else {
         AbstractMetaClass *cls = classes().findClass(centry->qualifiedCppName());
         if (!cls) {
-            qFatal("CppImplGenerator::fromObject(): class '%s' could not be resolved...",
+            qFatal("PlainCppImplGenerator::fromObject(): class '%s' could not be resolved...",
                    qPrintable(centry->qualifiedCppName()));
         }
 
@@ -2137,19 +2141,19 @@ QString CppImplGenerator::fromObject(const TypeEntry *entry,
         returned = "qtjambi_from_object(__jni_env, " + var_name + ", \""
                    + centry->lookupName()
                    + "\", \"" + QString(package).replace(".", "/") + "/\","
-                   + "\"" + jni_signature(full_name, Underscores) + "\", true);";
+                   + "\"" + c_signature(full_name, Underscores) + "\", true);";
     }
 
     return returned;
 }
 
-void CppImplGenerator::writeOriginalMetaObjectFunction(QTextStream &s, const AbstractMetaClass *java_class) {
+void PlainCppImplGenerator::writeOriginalMetaObjectFunction(QTextStream &s, const AbstractMetaClass *java_class) {
     Q_ASSERT(java_class->isQObject());
 
-    s << jni_function_signature(java_class->package(),
-                                java_class->name(),
-                                "originalMetaObject",
-                                "jlong");
+    s << c_function_signature(java_class->package(),
+                              java_class->name(),
+                              "originalMetaObject",
+                              "jlong");
 
     s << endl
     << "(JNIEnv *," << endl
@@ -2162,11 +2166,11 @@ void CppImplGenerator::writeOriginalMetaObjectFunction(QTextStream &s, const Abs
     s << "}" << endl << endl;
 }
 
-void CppImplGenerator::writeFromNativeFunction(QTextStream &s, const AbstractMetaClass *java_class) {
-    s << jni_function_signature(java_class->package(),
-                                java_class->name(),
-                                "fromNativePointer",
-                                "jobject");
+void PlainCppImplGenerator::writeFromNativeFunction(QTextStream &s, const AbstractMetaClass *java_class) {
+    s << c_function_signature(java_class->package(),
+                              java_class->name(),
+                              "fromNativePointer",
+                              "jobject");
     s << endl
     << "(JNIEnv *__jni_env," << endl
     << " jclass," << endl
@@ -2180,11 +2184,11 @@ void CppImplGenerator::writeFromNativeFunction(QTextStream &s, const AbstractMet
     }
 }
 
-void CppImplGenerator::writeFromArrayFunction(QTextStream &s, const AbstractMetaClass *java_class) {
-    s << jni_function_signature(java_class->package(),
-                                java_class->name(),
-                                "nativePointerArray",
-                                "jobject");
+void PlainCppImplGenerator::writeFromArrayFunction(QTextStream &s, const AbstractMetaClass *java_class) {
+    s << c_function_signature(java_class->package(),
+                              java_class->name(),
+                              "nativePointerArray",
+                              "jobject");
     s << endl
     << "(JNIEnv *__jni_env," << endl
     << " jclass," << endl
@@ -2201,7 +2205,7 @@ void CppImplGenerator::writeFromArrayFunction(QTextStream &s, const AbstractMeta
 }
 
 
-void CppImplGenerator::writeInterfaceCastFunction(QTextStream &s,
+void PlainCppImplGenerator::writeInterfaceCastFunction(QTextStream &s,
         const AbstractMetaClass *java_class,
         const AbstractMetaClass *interface) {
     Q_ASSERT(interface->isInterface());
@@ -2209,10 +2213,10 @@ void CppImplGenerator::writeInterfaceCastFunction(QTextStream &s,
     QString interface_name = ie->origin()->targetLangName();
 
     s << endl
-    << jni_function_signature(java_class->package(),
-                              java_class->name(),
-                              QString("__qt_cast_to_%1").arg(interface_name),
-                              "jlong",
+    << c_function_signature(java_class->package(),
+                            java_class->name(),
+                            QString("__qt_cast_to_%1").arg(interface_name),
+                            "jlong",
                               "__J");
 
     s << endl
@@ -2225,7 +2229,7 @@ void CppImplGenerator::writeInterfaceCastFunction(QTextStream &s,
                 << "}" << endl;
 }
 
-bool CppImplGenerator::writeConversionRule(QTextStream &s,
+bool PlainCppImplGenerator::writeConversionRule(QTextStream &s,
         TypeSystem::Language target_language,
         const AbstractMetaFunction *java_function,
         int argument_index,
@@ -2270,7 +2274,7 @@ bool CppImplGenerator::writeConversionRule(QTextStream &s,
 }
 
 
-void CppImplGenerator::writeJavaToQt(QTextStream &s,
+void PlainCppImplGenerator::writeJavaToQt(QTextStream &s,
                                      const AbstractMetaClass *java_class,
                                      const AbstractMetaType *function_return_type,
                                      const QString &qt_name,
@@ -2297,7 +2301,7 @@ void CppImplGenerator::writeJavaToQt(QTextStream &s,
 }
 
 
-void CppImplGenerator::writeJavaToQt(QTextStream &s,
+void PlainCppImplGenerator::writeJavaToQt(QTextStream &s,
                                      const AbstractMetaType *java_type,
                                      const QString &qt_name,
                                      const QString &java_name,
@@ -2335,10 +2339,12 @@ void CppImplGenerator::writeJavaToQt(QTextStream &s,
         writeTypeInfo(s, elementType);
         s << " " << qt_name << "[" << java_type->arrayElementCount() << "];" << endl;
 
+#if 0 // JNI -> C TODO
         s << INDENT << "__jni_env->" << getXxxArrayRegion(elementType) << "( (" << translateType(java_type, options)
         << ")" << java_name << ", 0, " << java_type->arrayElementCount() << ", "
         << "(" << translateType(elementType, options) << " *" << ")"
         << qt_name << ");" << endl;
+#endif
 
     } else if (java_type->isArray()) {
         AbstractMetaType *elementType = java_type->arrayElementType();
@@ -2576,7 +2582,7 @@ static const QString nativePointerTypeString(const AbstractMetaType *java_type) 
     return QString("%1").arg(type);
 }
 
-void CppImplGenerator::writeQtToJava(QTextStream &s,
+void PlainCppImplGenerator::writeQtToJava(QTextStream &s,
                                      const AbstractMetaType *java_type,
                                      const QString &qt_name,
                                      const QString &java_name,
@@ -2603,6 +2609,7 @@ void CppImplGenerator::writeQtToJava(QTextStream &s,
     if (java_type->isArray() && java_type->arrayElementType()->isPrimitive()) {
         AbstractMetaType *elementType = java_type->arrayElementType();
 
+#if 0 // JNI -> C TODO
         s << INDENT << translateType(java_type, option) << " " << java_name << " = __jni_env->" << newXxxArray(elementType)
         << "(" << java_type->arrayElementCount() << ");" << endl;
 
@@ -2611,6 +2618,7 @@ void CppImplGenerator::writeQtToJava(QTextStream &s,
         << ", 0, " << java_type->arrayElementCount() << ", "
         << "(" << translateType(elementType, option) << " *" << ")"
         << qt_name << ");" << endl;
+#endif
 
     } else if (java_type->isArray()) {
         AbstractMetaType *elementType = java_type->arrayElementType();
@@ -2737,7 +2745,7 @@ void CppImplGenerator::writeQtToJava(QTextStream &s,
 }
 
 
-void CppImplGenerator::writeQtToJavaContainer(QTextStream &s,
+void PlainCppImplGenerator::writeQtToJavaContainer(QTextStream &s,
         const AbstractMetaType *java_type,
         const QString &qt_name,
         const QString &java_name,
@@ -2915,7 +2923,7 @@ void CppImplGenerator::writeQtToJavaContainer(QTextStream &s,
 }
 
 
-void CppImplGenerator::writeJavaToQtContainer(QTextStream &s,
+void PlainCppImplGenerator::writeJavaToQtContainer(QTextStream &s,
         const AbstractMetaType *java_type,
         const QString &qt_name,
         const QString &java_name,
@@ -3048,7 +3056,7 @@ void CppImplGenerator::writeJavaToQtContainer(QTextStream &s,
 }
 
 
-void CppImplGenerator::writeFunctionCall(QTextStream &s, const QString &object_name,
+void PlainCppImplGenerator::writeFunctionCall(QTextStream &s, const QString &object_name,
         const AbstractMetaFunction *java_function,
         const QString &prefix,
         Option option,
@@ -3105,7 +3113,7 @@ void CppImplGenerator::writeFunctionCall(QTextStream &s, const QString &object_n
 }
 
 
-void CppImplGenerator::writeFunctionCallArguments(QTextStream &s,
+void PlainCppImplGenerator::writeFunctionCallArguments(QTextStream &s,
         const AbstractMetaFunction *java_function,
         const QString &prefix,
         Option options) {
@@ -3158,7 +3166,7 @@ void CppImplGenerator::writeFunctionCallArguments(QTextStream &s,
 }
 
 
-QString CppImplGenerator::translateType(const AbstractMetaType *java_type, Option option) {
+QString PlainCppImplGenerator::translateType(const AbstractMetaType *java_type, Option option) {
     if (!java_type)
         return "void";
 
@@ -3178,7 +3186,7 @@ QString CppImplGenerator::translateType(const AbstractMetaType *java_type, Optio
     }
 }
 
-void CppImplGenerator::writeExtraIncludes(QTextStream &s, const AbstractMetaClass *java_class) {
+void PlainCppImplGenerator::writeExtraIncludes(QTextStream &s, const AbstractMetaClass *java_class) {
     IncludeList includes = java_class->typeEntry()->extraIncludes();
     qSort(includes.begin(), includes.end());
 
@@ -3197,7 +3205,7 @@ void CppImplGenerator::writeExtraIncludes(QTextStream &s, const AbstractMetaClas
 }
 
 
-void CppImplGenerator::writeDefaultConstructedValues_helper(QSet<QString> &values,
+void PlainCppImplGenerator::writeDefaultConstructedValues_helper(QSet<QString> &values,
         const AbstractMetaFunction *func) {
     foreach(AbstractMetaArgument *arg, func->arguments()) {
         AbstractMetaType *type = arg->type();
@@ -3207,7 +3215,7 @@ void CppImplGenerator::writeDefaultConstructedValues_helper(QSet<QString> &value
 }
 
 
-void CppImplGenerator::writeDefaultConstructedValues(QTextStream &s, const AbstractMetaClass *java_class) {
+void PlainCppImplGenerator::writeDefaultConstructedValues(QTextStream &s, const AbstractMetaClass *java_class) {
 
     QSet<QString> values;
 

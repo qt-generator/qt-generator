@@ -34,14 +34,14 @@
 **
 ****************************************************************************/
 
-#ifndef CPPGENERATOR_H
-#define CPPGENERATOR_H
+#ifndef PLAINCPPGENERATOR_H
+#define PLAINCPPGENERATOR_H
 
 #include "abstractmetalang.h"
 #include "generator.h"
 #include "prigenerator.h"
 
-class CppGenerator : public Generator {
+class PlainCppGenerator : public Generator {
         Q_OBJECT
 
     public:
@@ -98,9 +98,9 @@ class CppGenerator : public Generator {
 
 };
 
-inline AbstractMetaFunctionList CppGenerator::signalFunctions(const AbstractMetaClass *cls) {
+inline AbstractMetaFunctionList PlainCppGenerator::signalFunctions(const AbstractMetaClass *cls) {
     return cls->cppSignalFunctions();
 }
 
 
-#endif // CPPGENERATOR_H
+#endif // PLAINCPPGENERATOR_H

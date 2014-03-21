@@ -35,7 +35,7 @@
 ****************************************************************************/
 
 #include "abstractmetalang.h"
-#include "cppgenerator.h"
+#include "plaincppgenerator.h"
 #include "reporthandler.h"
 
 // ### There's a bug in Qt causing it to fail at normalizing signatures
@@ -44,7 +44,7 @@
 // will fail. This is a work around which is only needed until that bug is fixed.
 // Since Qt works correctly with const FooBar<T> &, we simply change the
 // signature to that.
-QString CppGenerator::fixNormalizedSignatureForQt(const QString &signature) {
+QString PlainCppGenerator::fixNormalizedSignatureForQt(const QString &signature) {
     QString ret = signature;
     if (signature.contains("<") && signature.endsWith("const&")) {
         ret = "const "
@@ -54,7 +54,7 @@ QString CppGenerator::fixNormalizedSignatureForQt(const QString &signature) {
     return ret;
 }
 
-void CppGenerator::writeTypeInfo(QTextStream &s, const AbstractMetaType *type, Option options) {
+void PlainCppGenerator::writeTypeInfo(QTextStream &s, const AbstractMetaType *type, Option options) {
     if ((options & OriginalTypeDescription) && !type->originalTypeDescription().isEmpty()) {
         QString originalTypeDescription = type->originalTypeDescription();
 
@@ -117,7 +117,7 @@ void CppGenerator::writeTypeInfo(QTextStream &s, const AbstractMetaType *type, O
 }
 
 
-void CppGenerator::writeFunctionArguments(QTextStream &s,
+void PlainCppGenerator::writeFunctionArguments(QTextStream &s,
         const AbstractMetaArgumentList &arguments,
         Option option,
         int numArguments) {
@@ -159,7 +159,7 @@ void CppGenerator::writeFunctionArguments(QTextStream &s,
  * form "bool static_call".
  */
 
-void CppGenerator::writeFunctionSignature(QTextStream &s,
+void PlainCppGenerator::writeFunctionSignature(QTextStream &s,
         const AbstractMetaFunction *java_function,
         const AbstractMetaClass *implementor,
         const QString &name_prefix,

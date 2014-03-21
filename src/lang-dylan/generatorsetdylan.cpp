@@ -38,8 +38,8 @@
 #include "reporthandler.h"
 
 #include "dylangenerator.h"
-#include "cppheadergenerator.h"
-#include "cppimplgenerator.h"
+#include "plaincppheadergenerator.h"
+#include "plaincppimplgenerator.h"
 
 #include <QFileInfo>
 
@@ -78,8 +78,8 @@ QString GeneratorSetDylan::generate() {
     QList<Generator *> generators;
     PriGenerator *priGenerator = new PriGenerator;
     DylanGenerator *dylan_generator = 0;
-    CppHeaderGenerator *cpp_header_generator = 0;
-    CppImplGenerator *cpp_impl_generator = 0;
+    PlainCppHeaderGenerator *cpp_header_generator = 0;
+    PlainCppImplGenerator *cpp_impl_generator = 0;
 
     QStringList contexts;
 
@@ -92,17 +92,17 @@ QString GeneratorSetDylan::generate() {
 
     contexts << "DylanGenerator";
 
-    cpp_header_generator = new CppHeaderGenerator(priGenerator);
+    cpp_header_generator = new PlainCppHeaderGenerator(priGenerator);
     if (!cppOutDir.isNull())
         cpp_header_generator->setCppOutputDirectory(cppOutDir);
     generators << cpp_header_generator;
-    contexts << "CppHeaderGenerator";
+    contexts << "PlainCppHeaderGenerator";
 
-    cpp_impl_generator = new CppImplGenerator(priGenerator);
+    cpp_impl_generator = new PlainCppImplGenerator(priGenerator);
     if (!cppOutDir.isNull())
         cpp_impl_generator->setCppOutputDirectory(cppOutDir);
     generators << cpp_impl_generator;
-    contexts << "CppImplGenerator";
+    contexts << "PlainCppImplGenerator";
 
     for (int i = 0; i < generators.size(); ++i) {
         Generator *generator = generators.at(i);

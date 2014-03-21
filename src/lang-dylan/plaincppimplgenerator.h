@@ -34,21 +34,21 @@
 **
 ****************************************************************************/
 
-#ifndef CPPIMPLGENERATOR_H
-#define CPPIMPLGENERATOR_H
+#ifndef PLAINCPPIMPLGENERATOR_H
+#define PLAINCPPIMPLGENERATOR_H
 
 #include "abstractmetalang.h"
-#include "cppgenerator.h"
+#include "plaincppgenerator.h"
 
 enum JNISignatureFormat {
     Underscores,        //!< Used in the jni exported function names
     SlashesAndStuff     //!< Used for looking up functions through jni
 };
 
-QString jni_signature(const QString &full_name, JNISignatureFormat format);
-QString jni_signature(const AbstractMetaType *java_type, JNISignatureFormat format = Underscores);
+QString c_signature(const QString &full_name, JNISignatureFormat format);
+QString c_signature(const AbstractMetaType *java_type, JNISignatureFormat format = Underscores);
 
-class CppImplGenerator : public CppGenerator {
+class PlainCppImplGenerator : public PlainCppGenerator {
         Q_OBJECT
 
     public:
@@ -60,7 +60,7 @@ class CppImplGenerator : public CppGenerator {
             StandardJNISignature = JNIExport | ReturnType | ExternC
         };
 
-        CppImplGenerator(PriGenerator *pri)
+        PlainCppImplGenerator(PriGenerator *pri)
                 : m_native_jump_table(false) {
             priGenerator = pri;
         }
@@ -211,4 +211,4 @@ class CppImplGenerator : public CppGenerator {
         bool m_qtjambi_debug_tools;
 };
 
-#endif // CPPIMPLGENERATOR_H
+#endif // PLAINCPPIMPLGENERATOR_H

@@ -34,17 +34,17 @@
 **
 ****************************************************************************/
 
-#ifndef CPP_HEADER_GENERATOR
-#define CPP_HEADER_GENERATOR
+#ifndef PLAIN_CPP_HEADER_GENERATOR
+#define PLAIN_CPP_HEADER_GENERATOR
 
 #include "abstractmetalang.h"
-#include "cppgenerator.h"
+#include "plaincppgenerator.h"
 
-class CppHeaderGenerator : public CppGenerator {
+class PlainCppHeaderGenerator : public PlainCppGenerator {
         Q_OBJECT
 
     public:
-        CppHeaderGenerator(PriGenerator *pri) {
+        PlainCppHeaderGenerator(PriGenerator *pri) {
             priGenerator = pri;
         }
 
@@ -64,10 +64,10 @@ class CppHeaderGenerator : public CppGenerator {
 
         bool shouldGenerate(const AbstractMetaClass *java_class) const {
             return (java_class->generateShellClass()
-                    && CppGenerator::shouldGenerate(java_class))
+                    && PlainCppGenerator::shouldGenerate(java_class))
                    || (java_class->queryFunctions(AbstractMetaClass::Signals).size() > 0
                        && (java_class->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp));
         }
 };
 
-#endif // CPP_HEADER_GENERATOR
+#endif // PLAIN_CPP_HEADER_GENERATOR
