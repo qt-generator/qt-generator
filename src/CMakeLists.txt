@@ -20,6 +20,11 @@ SET(qt_generator_SOURCES
     util.cpp
     wrapper.cpp
 
+    lang-dylan/dylangenerator.cpp
+    lang-dylan/generatorsetdylan.cpp
+    lang-dylan/metadylan.cpp
+    lang-dylan/metadylanbuilder.cpp
+
     lang-java/classlistgenerator.cpp
     lang-java/cppgenerator.cpp
     lang-java/cppheadergenerator.cpp
@@ -70,6 +75,9 @@ SET(qt_generator_HEADERS
     generator.h
     generatorset.h
     prigenerator.h
+
+    lang-dylan/dylangenerator.h
+    lang-dylan/generatorsetdylan.h
 
     lang-java/cppgenerator.h
     lang-java/cppheadergenerator.h
