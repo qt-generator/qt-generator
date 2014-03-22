@@ -54,7 +54,6 @@ class GeneratorSet : public QObject {
         virtual void dumpObjectTree() = 0;
         virtual QString generate() = 0;
 
-        static GeneratorSet *getInstance();
         QString inDir;
         QString cppOutDir;
         QString javaOutDir;

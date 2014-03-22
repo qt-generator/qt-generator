@@ -54,6 +54,8 @@ class GeneratorSetDylan : public GeneratorSet {
 
         QString generate();
 
+        static GeneratorSet *getInstance();
+
     private:
         MetaDylanBuilder builder;
 };
