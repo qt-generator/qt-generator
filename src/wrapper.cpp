@@ -7,6 +7,8 @@
 #include "asttoxml.h"
 #include "parser/binder.h"
 #include "util.h"
+#include "lang-dylan/generatorsetdylan.h"
+#include "lang-java/generatorsetjava.h"
 
 QString Wrapper::include_directory = QString();
 
@@ -23,8 +25,18 @@ Wrapper::Wrapper(int argc, char *argv[]) :
         defineUndefineStageCurrent(1),
         debugCppMode(DEBUGLOG_DEFAULTS) {
 
-    gs = GeneratorSet::getInstance();
     args = parseArguments(argc, argv);
+    QString lang = "java";
+    if (args.contains("lang")) {
+        lang = args.value("lang");
+    }
+    if (lang == "java") {
+        gs = GeneratorSetJava::getInstance();
+    } else if (lang == "dylan") {
+        gs = GeneratorSetDylan::getInstance();
+    } else {
+      qFatal("Unknown language: %s", qPrintable(lang));
+    }
     handleArguments();
     assignVariables();
 }
@@ -275,7 +287,8 @@ void Wrapper::displayHelp(GeneratorSet* generatorSet) {
            "  --preproc-stage2                          \n"
            "  --target-platform-arm-cpu                 \n"
            "  -Dname[=definition]                       \n"
-           "  -Uname                                    \n",
+           "  -Uname                                    \n"
+           "  --lang=[java|dylan]                       \n",
            path_splitter, path_splitter);
 
     printf("%s", qPrintable(generatorSet->usage()));

@@ -48,7 +48,7 @@
 
 #include <QFileInfo>
 
-GeneratorSet *GeneratorSet::getInstance() {
+GeneratorSet *GeneratorSetJava::getInstance() {
     return new GeneratorSetJava();
 }
 

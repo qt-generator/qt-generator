@@ -43,7 +43,7 @@
 
 #include <QFileInfo>
 
-GeneratorSet *GeneratorSet::getInstance() {
+GeneratorSet *GeneratorSetDylan::getInstance() {
     return new GeneratorSetDylan();
 }
 

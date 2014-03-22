@@ -54,6 +54,8 @@ class GeneratorSetJava : public GeneratorSet {
 
         QString generate();
 
+        static GeneratorSet *getInstance();
+
     private:
 
         bool no_java;
