@@ -41,7 +41,7 @@
 #include <qdebug.h>
 
 QString PlainCppHeaderGenerator::fileNameForClass(const AbstractMetaClass *java_class) const {
-    return QString("qtjambishell_%1.h").arg(java_class->name());
+    return QString("qtc_%1.h").arg(java_class->name());
 }
 
 void PlainCppHeaderGenerator::writeFieldAccessors(QTextStream &s, const AbstractMetaField *java_field) {
@@ -90,7 +90,7 @@ void PlainCppHeaderGenerator::writeWrapperClass(QTextStream &s, const AbstractMe
 }
 
 void PlainCppHeaderGenerator::write(QTextStream &s, const AbstractMetaClass *java_class) {
-    QString include_block = "QTJAMBISHELL_" + java_class->name().toUpper() + "_H";
+    QString include_block = "QTC_" + java_class->name().toUpper() + "_H";
 
     s << "#ifndef " << include_block << endl
     << "#define " << include_block << endl << endl

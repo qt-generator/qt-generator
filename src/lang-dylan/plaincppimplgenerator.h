@@ -81,7 +81,6 @@ class PlainCppImplGenerator : public PlainCppGenerator {
                                  TypeSystem::Language language);
         void writeExtraFunctions(QTextStream &s, const AbstractMetaClass *java_class);
         void writeToStringFunction(QTextStream &s, const AbstractMetaClass *java_class);
-        void writeCloneFunction(QTextStream &s, const AbstractMetaClass *java_class);
         void writeShellSignatures(QTextStream &s, const AbstractMetaClass *java_class);
         void writeShellConstructor(QTextStream &s, const AbstractMetaFunction *java_function, int options = 0);
         void writeShellDestructor(QTextStream &s, const AbstractMetaClass *java_class);
@@ -169,7 +168,6 @@ class PlainCppImplGenerator : public PlainCppGenerator {
         void writeFromNativeFunction(QTextStream &s,
                                      const AbstractMetaClass *java_class);
         void writeFromArrayFunction(QTextStream &s, const AbstractMetaClass *java_class);
-        void writeJavaLangObjectOverrideFunctions(QTextStream &s, const AbstractMetaClass *cls);
 
         void writeInterfaceCastFunction(QTextStream &s,
                                         const AbstractMetaClass *java_class,
