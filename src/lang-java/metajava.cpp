@@ -44,3 +44,20 @@ bool MetaJavaFunction::needsCallThrough() const {
         return true;
     return AbstractMetaFunction::needsCallThrough();
 }
+
+QString MetaJavaFunction::marshalledName(Options options) const {
+    Q_UNUSED(options);
+    QString returned = "__qt_" + name();
+    AbstractMetaArgumentList arguments = this->arguments();
+    foreach(const AbstractMetaArgument *arg, arguments) {
+        returned += "_";
+        if (arg->type()->isNativePointer()) {
+            returned += "nativepointer";
+        } else if (arg->type()->isIntegerEnum() || arg->type()->isIntegerFlags()) {
+            returned += "int";
+        } else {
+            returned += arg->type()->name().replace("[]", "_3").replace(".", "_");
+        }
+    }
+    return returned;
+}

@@ -407,6 +407,14 @@ class AbstractMetaFunction : public AbstractMetaAttributes {
             NotEqual                    = 0x00001000
         };
 
+        enum Option {
+            NoOptions                   = 0,
+            DeclaringClass              = 0x01,
+            NoExternNamespace           = 0x02
+        };
+
+        typedef QFlags<Option> Options;
+
         AbstractMetaFunction()
                 : m_function_type(NormalFunction),
                 m_type(0),
@@ -432,7 +440,7 @@ class AbstractMetaFunction : public AbstractMetaAttributes {
         QString minimalSignature() const;
         QStringList possibleIntrospectionCompatibleSignatures() const;
 
-        QString marshalledName() const;
+        virtual QString marshalledName(Options options = NoOptions) const;
 
         // true if one or more of the arguments are of QtJambiObject subclasses
         bool argumentsHaveNativeId() const {

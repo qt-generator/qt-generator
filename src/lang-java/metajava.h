@@ -68,6 +68,7 @@ class MetaJavaFunction : public AbstractMetaFunction {
 
         /*override*/ bool needsCallThrough() const;
 
+        /*override*/ QString marshalledName(Options options = NoOptions) const;
     private:
         int m_jumptable_id;
 };

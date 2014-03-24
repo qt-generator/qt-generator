@@ -191,19 +191,33 @@ bool AbstractMetaFunction::needsSuppressUncheckedWarning() const {
     return false;
 }
 
-QString AbstractMetaFunction::marshalledName() const {
-    QString returned = "__qt_" + name();
+QString AbstractMetaFunction::marshalledName(Options options) const {
+    QString returned;
+
+    if (!(options & NoExternNamespace))
+        returned += "qtc_";
+
+    if (options & DeclaringClass)
+        returned += declaringClass()->name();
+    else
+        returned += ownerClass()->name();
+
+    returned += "_" + name();
     AbstractMetaArgumentList arguments = this->arguments();
     foreach(const AbstractMetaArgument *arg, arguments) {
         returned += "_";
         if (arg->type()->isNativePointer()) {
-            returned += "nativepointer";
+            returned += "nativepointer" + arg->type()->name().replace("[]", "_3").replace(".", "_");
         } else if (arg->type()->isIntegerEnum() || arg->type()->isIntegerFlags()) {
             returned += "int";
         } else {
             returned += arg->type()->name().replace("[]", "_3").replace(".", "_");
         }
     }
+
+    if (this->isConstant())
+        returned += "_const";
+
     return returned;
 }
 
