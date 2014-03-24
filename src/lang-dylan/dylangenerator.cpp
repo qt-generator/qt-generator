@@ -105,15 +105,19 @@ QString DylanGenerator::translateType(const AbstractMetaType *dylan_type, const 
                 ((EnumTypeEntry *) dylan_type->typeEntry())->forceInteger()) ||
                 (dylan_type->isFlags() &&
                 ((FlagsTypeEntry *) dylan_type->typeEntry())->forceInteger())) {
+            s = "<integer>";
+            /*
             if (option & BoxedPrimitive)
                 s = "dylan.lang.Integer";
             else
                 s = "int";
+            */
         } else {
             if (option & EnumAsInts)
-                s = "int";
+                //s = "int";
+                s = "<integer>";
             else
-                s = dylan_type->fullName();
+                s = dylan_type->name();
         }
     } else {
         if (dylan_type->isPrimitive() && (option & BoxedPrimitive)) {
@@ -145,7 +149,8 @@ QString DylanGenerator::translateType(const AbstractMetaType *dylan_type, const 
             const TypeEntry *type = dylan_type->typeEntry();
             if (type->designatedInterface())
                 type = type->designatedInterface();
-            s = type->qualifiedTargetLangName();
+            //s = type->qualifiedTargetLangName();
+            s = type->name();
         }
     }
 
@@ -156,18 +161,21 @@ QString DylanGenerator::argumentString(const AbstractMetaFunction *dylan_functio
                                       const AbstractMetaArgument *dylan_argument,
                                       uint options) {
     QString modified_type = dylan_function->typeReplaced(dylan_argument->argumentIndex() + 1);
-    QString arg;
-
-    if (modified_type.isEmpty())
-        arg = translateType(dylan_argument->type(), dylan_function->implementingClass(), (Option) options);
-    else
-        arg = modified_type.replace('$', '.');
+    QString arg = "  parameter ";
 
     if ((options & SkipName) == 0) {
-        arg += " ";
         arg += dylan_argument->argumentName();
     }
 
+    arg += " :: ";
+
+    if (modified_type.isEmpty())
+        arg += translateType(dylan_argument->type(), dylan_function->implementingClass(), (Option) options);
+    else
+        //arg += modified_type.replace('$', '.');
+        arg += modified_type;
+
+    arg += ";";
     return arg;
 }
 
@@ -869,6 +877,14 @@ void DylanGenerator::writeFunction(QTextStream &s, const AbstractMetaFunction *m
     QString functionName = dylan_function->name();
     setupForFunction(dylan_function, &included_attributes, &excluded_attributes);
 
+    s << "define C-function " << functionName << endl;
+    if (!dylan_function->isStatic() && !dylan_function->isConstructor()) {
+      s << "  input parameter self :: " << dylan_function->ownerClass()->name() << ";" << endl;;
+    }
+    writeFunctionArguments(s, dylan_function, dylan_function->arguments().count());
+    s << endl << "  c-name: \"" << dylan_function->marshalledName() << "\";" << endl;
+    s << "end;" << endl;
+    /*
     if (!dylan_function->ownerClass()->isInterface()) {
         writeEnumOverload(s, dylan_function, included_attributes, excluded_attributes);
         writeFunctionOverloads(s, dylan_function, included_attributes, excluded_attributes);
@@ -963,6 +979,7 @@ void DylanGenerator::writeFunction(QTextStream &s, const AbstractMetaFunction *m
     } else {
         s << ";" << endl;
     }
+    */
 }
 
 static void write_equals_parts(QTextStream &s, const AbstractMetaFunctionList &lst, char prefix, bool *first) {
@@ -1376,10 +1393,15 @@ void DylanGenerator::writeFunctionOverloads(QTextStream &s, const AbstractMetaFu
     }
 }
 
-void DylanGenerator::write(QTextStream &s, const AbstractMetaClass *dylan_class) {
+void DylanGenerator::write(QTextStream &s, const AbstractMetaClass *abstract_class) {
+    MetaDylanClass * dylan_class = (MetaDylanClass *)abstract_class;
     ReportHandler::debugSparse("Generating class: " + dylan_class->fullName());
 
     bool fakeClass = dylan_class->attributes() & AbstractMetaAttributes::Fake;
+    s << "module:  " << dylan_class->package() << endl;
+    s << "synopsis: generated bindings" << endl;
+    s << "copyright: See LICENSE file in this distribution." << endl << endl;
+    /*
 
     s << "package " << dylan_class->package() << ";" << endl << endl;
 
@@ -1398,14 +1420,17 @@ void DylanGenerator::write(QTextStream &s, const AbstractMetaClass *dylan_class)
     if ((dylan_class->typeEntry()->typeFlags() & ComplexTypeEntry::Deprecated) != 0) {
         s << "@Deprecated" << endl;
     }
+    */
 
     if (dylan_class->isInterface()) {
-        s << "public interface ";
+        s << "// interface" << endl;
+        s << "define open C-subtype ";
     } else {
         if (dylan_class->isPublic())
-            s << "public ";
+            s << "define open C-subtype ";
         // else friendly
 
+        /*
         bool force_abstract = (dylan_class->typeEntry()->typeFlags() & ComplexTypeEntry::ForceAbstract) != 0;
         if (dylan_class->isFinal() && !force_abstract)
             s << "final ";
@@ -1421,13 +1446,15 @@ void DylanGenerator::write(QTextStream &s, const AbstractMetaClass *dylan_class)
         } else {
             s << "class ";
         }
+        */
 
     }
 
     const ComplexTypeEntry *type = dylan_class->typeEntry();
 
-    s << dylan_class->name();
+    s << "<" << dylan_class->name() << ">";
 
+    /*
     if (type->isGenericClass()) {
         s << "<";
         QList<TypeEntry *> templateArguments = dylan_class->templateBaseClass()->templateArguments();
@@ -1439,10 +1466,41 @@ void DylanGenerator::write(QTextStream &s, const AbstractMetaClass *dylan_class)
         }
         s << ">";
     }
+    */
 
+    // implementing interfaces...
+    bool implements = false;
+    AbstractMetaClassList interfaces = dylan_class->interfaces();
+
+    if ((!dylan_class->isInterface() && !dylan_class->isNamespace()) || !interfaces.isEmpty()) {
+        s << " (";
+        if (!dylan_class->baseClassName().isEmpty()) {
+            s << "<" << dylan_class->baseClass()->name() << ">";
+        } else {
+            QString sc = type->defaultSuperclass();
+
+            if (!sc.isEmpty())
+                s << "<C-void*>";
+        }
+        if (!interfaces.isEmpty() && dylan_class->isInterface())
+            s << ", ";
+        else {
+            implements = true;
+        }
+        for (int i = 0; i < interfaces.size(); ++i) {
+            AbstractMetaClass *iface = interfaces.at(i);
+            //if (i != 0)
+                s << ", ";
+            s << "<" << iface->name() << ">";
+        }
+
+        s << ")";
+    }
+
+    /*
     if (!dylan_class->isNamespace() && !dylan_class->isInterface()) {
         if (!dylan_class->baseClassName().isEmpty()) {
-            s << " extends " << dylan_class->baseClass()->fullName();
+            s << " (<" << dylan_class->baseClass()->name() << ">)";
         } else {
             QString sc = type->defaultSuperclass();
 
@@ -1501,8 +1559,10 @@ void DylanGenerator::write(QTextStream &s, const AbstractMetaClass *dylan_class)
         }
         s << dylan_class->typeEntry()->implements();
     }
+    */
+    s << endl << "end;" << endl;
 
-    s << endl << "{" << endl;
+    //s << endl << "{" << endl;
 
     Indentation indent(INDENT);
 
@@ -1556,6 +1616,7 @@ void DylanGenerator::write(QTextStream &s, const AbstractMetaClass *dylan_class)
             if (isStatic)
                 s << "static ";
 
+            /*
             if (actions != ReferenceCount::Set && actions != ReferenceCount::Ignore) {
                 s << "dylan.util.Collection<Object> " << variableName << " = ";
 
@@ -1571,9 +1632,11 @@ void DylanGenerator::write(QTextStream &s, const AbstractMetaClass *dylan_class)
                     s << "synchronized ";
                 s << "Object " << variableName << " = null;" << endl;
             }
+            */
         }
     }
 
+    /*
     if (!dylan_class->isInterface() && (!dylan_class->isNamespace() || dylan_class->functionsInTargetLang().size() > 0)
             && (dylan_class->baseClass() == 0 || dylan_class->package() != dylan_class->baseClass()->package())) {
         s << endl
@@ -1586,6 +1649,7 @@ void DylanGenerator::write(QTextStream &s, const AbstractMetaClass *dylan_class)
         s << INDENT << "    " << dylan_class->package() << ".QtJambi_LibraryInitializer.init();" << endl
         << INDENT << "}" << endl;
     }
+    */
 
     if (!dylan_class->isInterface() && dylan_class->isAbstract()) {
         s << endl;
@@ -1761,8 +1825,6 @@ void DylanGenerator::write(QTextStream &s, const AbstractMetaClass *dylan_class)
     if (dylan_class->hasCloneOperator() && !alreadyHasCloneMethod) {
         writeCloneFunction(s, dylan_class);
     }
-
-    s << "}" << endl;
 
     QString lid_file_name = dylan_class->package().replace(".", "_") + "/" + dylan_class->package().replace(".", "_") + ".lid";
     lidGenerator->addBinding(lid_file_name, fileNameForClass(dylan_class));
@@ -2037,7 +2099,7 @@ void DylanGenerator::writeFunctionArguments(QTextStream &s, const AbstractMetaFu
     for (int i = 0; i < argument_count; ++i) {
         if (!dylan_function->argumentRemoved(i + 1)) {
             if (i != 0)
-                s << ", ";
+                s << endl;
             writeArgument(s, dylan_function, arguments.at(i), options);
         }
     }
