@@ -41,6 +41,10 @@
 
 #include <QStringList>
 
+struct Module {
+    QSet<QString> bindings;
+};
+
 class LibraryGenerator : public Generator {
         Q_OBJECT
 
@@ -55,10 +59,10 @@ class LibraryGenerator : public Generator {
             return outputDirectory() + QLatin1String("/dylan");
         }
 
-        void addBinding(const QString &binding);
+        void addBinding(const QString &module, const QString &binding);
 
     private:
-        QSet<QString> m_bindings;
+        QHash<QString, Module> m_modules;
         QString m_cpp_out_dir;
 
 };

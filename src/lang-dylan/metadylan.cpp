@@ -63,6 +63,11 @@ QString MetaDylanFunction::dylanConstructorName() const {
   return function_name;
 }
 
+QString MetaDylanFunction::package() const {
+  MetaDylanClass *owner = (MetaDylanClass *)ownerClass();
+  return owner->package();
+}
+
 QString MetaDylanClass::dylanName() const {
   return "<" + name() + ">";
 }

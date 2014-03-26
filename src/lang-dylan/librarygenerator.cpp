@@ -38,30 +38,35 @@
 #include "reporthandler.h"
 #include "fileout.h"
 
-void LibraryGenerator::addBinding(const QString &binding) {
-    m_bindings << binding;
+void LibraryGenerator::addBinding(const QString &module, const QString &binding) {
+    m_modules[module].bindings << binding;
 }
 
 void LibraryGenerator::generate() {
-    FileOut file(resolveOutputDirectory() + "/library.dylan");
-    file.stream << "Module: dylan-user\n";
+    QHashIterator<QString, Module> module(m_modules);
 
-    // XXX: Generate a real library file here.
+    while (module.hasNext()) {
+      module.next();
 
-    QStringList list = m_bindings.values();
-    qSort(list.begin(), list.end());
-    file.stream << "export\n";
-    bool is_first = true;
-    foreach(const QString &entry, list) {
-        if (!is_first) {
-          file.stream << ",\n";
-        }
-        is_first = false;
-        file.stream << "  " << entry;
+      FileOut file(resolveOutputDirectory() + "/" + module.key() + "/library.dylan");
+      file.stream << "Module: dylan-user\n";
+      file.stream << "\ndefine module " << module.key() << endl;
+      QStringList list = module.value().bindings.values();
+      qSort(list.begin(), list.end());
+      file.stream << "  export\n";
+      bool is_first = true;
+      foreach(const QString &entry, list) {
+          if (!is_first) {
+            file.stream << ",\n";
+          }
+          is_first = false;
+          file.stream << "    " << entry;
+      }
+      file.stream << ";\n";
+      file.stream << "end module;\n";
+
+      if (file.done())
+          ++m_num_generated_written;
+      ++m_num_generated;
     }
-    file.stream << ";\n";
-
-    if (file.done())
-        ++m_num_generated_written;
-    ++m_num_generated;
 }
