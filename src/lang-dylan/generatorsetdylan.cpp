@@ -76,6 +76,7 @@ QString GeneratorSetDylan::generate() {
 
     // Code generation
     QList<Generator *> generators;
+    LibraryGenerator *libraryGenerator = new LibraryGenerator;
     LidGenerator *lidGenerator = new LidGenerator;
     DylanGenerator *dylan_generator = 0;
     PlainCppHeaderGenerator *cpp_header_generator = 0;
@@ -83,7 +84,7 @@ QString GeneratorSetDylan::generate() {
 
     QStringList contexts;
 
-    dylan_generator = new DylanGenerator(lidGenerator);
+    dylan_generator = new DylanGenerator(libraryGenerator, lidGenerator);
     if (!javaOutDir.isNull())
         dylan_generator->setDylanOutputDirectory(javaOutDir);
     if (!outDir.isNull())
@@ -109,6 +110,11 @@ QString GeneratorSetDylan::generate() {
     generators << lidGenerator;
     contexts << "LidGenerator";
 
+    if (!cppOutDir.isNull())
+        libraryGenerator->setOutputDirectory(cppOutDir);
+    generators << libraryGenerator;
+    contexts << "LibraryGenerator";
+
     for (int i = 0; i < generators.size(); ++i) {
         Generator *generator = generators.at(i);
         ReportHandler::setContext(contexts.at(i));
@@ -128,7 +134,8 @@ QString GeneratorSetDylan::generate() {
                   "  - dylan.....: %2 (%3)\n"
                   "  - cpp-impl..: %4 (%5)\n"
                   "  - cpp-h.....: %6 (%7)\n"
-                  "  - lid.......: %8 (%9)\n"
+                  "  - library...: %8 (%9)\n"
+                  "  - lid.......: %10 (%11)\n"
                  )
           .arg(builder.classes().size())
           .arg(dylan_generator ? dylan_generator->numGenerated() : 0)
@@ -137,6 +144,8 @@ QString GeneratorSetDylan::generate() {
           .arg(cpp_impl_generator ? cpp_impl_generator->numGeneratedAndWritten() : 0)
           .arg(cpp_header_generator ? cpp_header_generator->numGenerated() : 0)
           .arg(cpp_header_generator ? cpp_header_generator->numGeneratedAndWritten() : 0)
+          .arg(libraryGenerator->numGenerated())
+          .arg(libraryGenerator->numGeneratedAndWritten())
           .arg(lidGenerator->numGenerated())
           .arg(lidGenerator->numGeneratedAndWritten());
 

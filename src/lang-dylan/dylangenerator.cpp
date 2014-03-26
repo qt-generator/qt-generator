@@ -48,7 +48,8 @@
 
 static Indentor INDENT;
 
-DylanGenerator::DylanGenerator(LidGenerator * lid) {
+DylanGenerator::DylanGenerator(LibraryGenerator *library, LidGenerator *lid) {
+  libraryGenerator = library;
   lidGenerator = lid;
 }
 
