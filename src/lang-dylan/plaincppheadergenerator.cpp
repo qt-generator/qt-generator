@@ -138,7 +138,7 @@ void PlainCppHeaderGenerator::write(QTextStream &s, const AbstractMetaClass *abs
     writeWrapperClass(s, java_class);
 
     QString lid_file_name = java_class->package() + "/" +
-                            java_class->package().replace("-", "_") + ".lid";
+                            java_class->package() + ".lid";
 
     if (!java_class->generateShellClass()) {
         s << "#endif" << endl << endl;
