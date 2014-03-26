@@ -102,8 +102,7 @@ class DylanGenerator : public Generator {
         void setupForFunction(const AbstractMetaFunction *dylan_function,
                               uint *included_attributes, uint *excluded_attributes) const;
 
-        virtual QString subDirectoryForClass(const AbstractMetaClass *dylan_class) const
-        { return subDirectoryForPackage(dylan_class->package()); }
+        virtual QString subDirectoryForClass(const AbstractMetaClass *abstract_class) const;
 
         virtual QString fileNameForClass(const AbstractMetaClass *dylan_class) const;
 
@@ -137,7 +136,7 @@ class DylanGenerator : public Generator {
         void setLogOutputDirectory(const QString &logOutDir) { m_log_out_dir = logOutDir; }
 
     private:
-        QString subDirectoryForPackage(const QString &package) const { return QString(package).replace(".", "/"); }
+        QString subDirectoryForPackage(const QString &package) const { return QString(package); }
         void writeInstantiatedType(QTextStream &s, const AbstractMetaType *abstractMetaType) const;
 
     protected:

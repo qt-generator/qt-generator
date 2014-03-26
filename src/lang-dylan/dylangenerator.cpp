@@ -57,6 +57,11 @@ QString DylanGenerator::fileNameForClass(const AbstractMetaClass *dylan_class) c
     return QString("%1.dylan").arg(dylan_class->name());
 }
 
+QString DylanGenerator::subDirectoryForClass(const AbstractMetaClass *abstract_class) const {
+    MetaDylanClass *dylan_class = (MetaDylanClass *)abstract_class;
+    return subDirectoryForPackage(dylan_class->package());
+}
+
 void DylanGenerator::writeFieldAccessors(QTextStream &s, const AbstractMetaField *field) {
     Q_ASSERT(field->isPublic() || field->isProtected());
 
