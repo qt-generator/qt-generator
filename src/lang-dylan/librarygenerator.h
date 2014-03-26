@@ -47,10 +47,19 @@ class LibraryGenerator : public Generator {
     public:
         virtual void generate();
 
+        /*virtual*/ QString resolveOutputDirectory() const { return cppOutputDirectory(); }
+
+        QString cppOutputDirectory() const {
+            if (!m_cpp_out_dir.isNull())
+                return m_cpp_out_dir;
+            return outputDirectory() + QLatin1String("/dylan");
+        }
+
         void addBinding(const QString &binding);
 
     private:
-        QStringList m_bindings;
+        QSet<QString> m_bindings;
+        QString m_cpp_out_dir;
 
 };
 #endif // LIBRARYGENERATOR_H

@@ -708,8 +708,10 @@ void DylanGenerator::writeFunction(QTextStream &s, const AbstractMetaFunction *m
     s << "define C-function ";
     if (!dylan_function->isConstructor()) {
       s << dylan_function->dylanName() << endl;
+      libraryGenerator->addBinding(dylan_function->dylanName());
     } else {
       s << dylan_function->dylanConstructorName() << endl;
+      libraryGenerator->addBinding(dylan_function->dylanConstructorName());
     }
     if (!dylan_function->isStatic() && !dylan_function->isConstructor()) {
       s << "  input parameter self :: " << dylan_owner_class->dylanName() << ";" << endl;;
@@ -1151,6 +1153,7 @@ void DylanGenerator::write(QTextStream &s, const AbstractMetaClass *abstract_cla
     const ComplexTypeEntry *type = dylan_class->typeEntry();
 
     s << dylan_class->dylanName();
+    libraryGenerator->addBinding(dylan_class->dylanName());
 
     // implementing interfaces...
     bool implements = false;

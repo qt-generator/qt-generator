@@ -48,11 +48,18 @@ void LibraryGenerator::generate() {
 
     // XXX: Generate a real library file here.
 
-    QStringList list = m_bindings;
+    QStringList list = m_bindings.values();
     qSort(list.begin(), list.end());
+    file.stream << "export\n";
+    bool is_first = true;
     foreach(const QString &entry, list) {
-        file.stream << "        " << entry << "\n";
+        if (!is_first) {
+          file.stream << ",\n";
+        }
+        is_first = false;
+        file.stream << "  " << entry;
     }
+    file.stream << ";\n";
 
     if (file.done())
         ++m_num_generated_written;
