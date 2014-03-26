@@ -45,6 +45,7 @@
 struct Lid {
     QStringList headers;
     QStringList sources;
+    QStringList bindings;
 };
 
 class LidGenerator : public Generator {
@@ -64,6 +65,7 @@ class LidGenerator : public Generator {
 
         void addHeader(const QString &folder, const QString &header);
         void addSource(const QString &folder, const QString &source);
+        void addBinding(const QString &folder, const QString &binding);
 
     private:
         QHash<QString, Lid> lidHash;

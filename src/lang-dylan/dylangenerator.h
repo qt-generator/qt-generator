@@ -39,6 +39,7 @@
 
 #include "abstractmetalang.h"
 #include "generator.h"
+#include "lidgenerator.h"
 
 #include <QTextStream>
 
@@ -46,7 +47,7 @@ class DylanGenerator : public Generator {
         Q_OBJECT
 
     public:
-        DylanGenerator();
+        DylanGenerator(LidGenerator *lid);
 
         static QString translateType(const AbstractMetaType *dylan_type, const AbstractMetaClass *context, Option option = NoOption);
 
@@ -139,6 +140,7 @@ class DylanGenerator : public Generator {
         void writeInstantiatedType(QTextStream &s, const AbstractMetaType *abstractMetaType) const;
 
     protected:
+        LidGenerator *lidGenerator;
         QString m_package_name;
         QString m_dylan_out_dir;
         QString m_log_out_dir;		// needed for *.log generation

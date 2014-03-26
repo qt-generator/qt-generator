@@ -48,7 +48,8 @@
 
 static Indentor INDENT;
 
-DylanGenerator::DylanGenerator() {
+DylanGenerator::DylanGenerator(LidGenerator * lid) {
+  lidGenerator = lid;
 }
 
 QString DylanGenerator::fileNameForClass(const AbstractMetaClass *dylan_class) const {
@@ -1762,6 +1763,9 @@ void DylanGenerator::write(QTextStream &s, const AbstractMetaClass *dylan_class)
     }
 
     s << "}" << endl;
+
+    QString lid_file_name = dylan_class->package().replace(".", "_") + "/" + dylan_class->package().replace(".", "_") + ".lid";
+    lidGenerator->addBinding(lid_file_name, fileNameForClass(dylan_class));
 }
 
 void DylanGenerator::generate() {

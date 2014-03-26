@@ -83,7 +83,7 @@ QString GeneratorSetDylan::generate() {
 
     QStringList contexts;
 
-    dylan_generator = new DylanGenerator;
+    dylan_generator = new DylanGenerator(lidGenerator);
     if (!javaOutDir.isNull())
         dylan_generator->setDylanOutputDirectory(javaOutDir);
     if (!outDir.isNull())

@@ -46,6 +46,10 @@ void LidGenerator::addSource(const QString &folder, const QString &source) {
     lidHash[folder].sources << source;
 }
 
+void LidGenerator::addBinding(const QString &folder, const QString &binding) {
+    lidHash[folder].bindings << binding;
+}
+
 void LidGenerator::generate() {
     QHashIterator<QString, Lid> lid(lidHash);
     while (lid.hasNext()) {
