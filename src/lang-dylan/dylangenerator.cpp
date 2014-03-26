@@ -106,15 +106,8 @@ QString DylanGenerator::translateType(const AbstractMetaType *dylan_type, const 
                 (dylan_type->isFlags() &&
                 ((FlagsTypeEntry *) dylan_type->typeEntry())->forceInteger())) {
             s = "<integer>";
-            /*
-            if (option & BoxedPrimitive)
-                s = "dylan.lang.Integer";
-            else
-                s = "int";
-            */
         } else {
             if (option & EnumAsInts)
-                //s = "int";
                 s = "<integer>";
             else
                 s = dylan_type->name();
@@ -124,8 +117,8 @@ QString DylanGenerator::translateType(const AbstractMetaType *dylan_type, const 
             s = static_cast<const PrimitiveTypeEntry *>(dylan_type->typeEntry())->javaObjectFullName();
 
         } else if (dylan_type->isNativePointer()) {
-            s = "com.trolltech.qt.QNativePointer";
-
+            // Pointer
+            s = dylan_type->name();
         } else if (dylan_type->isContainer()) {
             s = dylan_type->typeEntry()->qualifiedTargetLangName();
             if ((option & SkipTemplateParameters) == 0) {
@@ -149,7 +142,6 @@ QString DylanGenerator::translateType(const AbstractMetaType *dylan_type, const 
             const TypeEntry *type = dylan_type->typeEntry();
             if (type->designatedInterface())
                 type = type->designatedInterface();
-            //s = type->qualifiedTargetLangName();
             s = type->name();
         }
     }
@@ -167,15 +159,14 @@ QString DylanGenerator::argumentString(const AbstractMetaFunction *dylan_functio
         arg += dylan_argument->argumentName();
     }
 
-    arg += " :: ";
+    arg += " :: <";
 
     if (modified_type.isEmpty())
         arg += translateType(dylan_argument->type(), dylan_function->implementingClass(), (Option) options);
     else
-        //arg += modified_type.replace('$', '.');
         arg += modified_type;
 
-    arg += ";";
+    arg += ">;";
     return arg;
 }
 
@@ -188,185 +179,15 @@ void DylanGenerator::writeArgument(QTextStream &s,
 
 
 void DylanGenerator::writeIntegerEnum(QTextStream &s, const AbstractMetaEnum *dylan_enum) {
-    const AbstractMetaEnumValueList &values = dylan_enum->values();
-
-    s << "    public static class " << dylan_enum->name() << "{" << endl;
-    for (int i = 0; i < values.size(); ++i) {
-        AbstractMetaEnumValue *value = values.at(i);
-
-        if (dylan_enum->typeEntry()->isEnumValueRejected(value->name()))
-            continue;
-
-        s << "        public static final int " << value->name() << " = " << value->value();
-        s << ";";
-        s << endl;
-    }
-
-    s << "    } // end of enum " << dylan_enum->name() << endl << endl;
+    // TODO: fill this
 }
 
 void DylanGenerator::writeEnum(QTextStream &s, const AbstractMetaEnum *dylan_enum) {
-    if (dylan_enum->typeEntry()->forceInteger()) {
-        writeIntegerEnum(s, dylan_enum);
-        return;
-    }
-
-    // Check if enums in QObjects are declared in the meta object. If not
-    if ((dylan_enum->enclosingClass()->isQObject() || dylan_enum->enclosingClass()->isQtNamespace())
-            && !dylan_enum->hasQEnumsDeclaration()) {
-        s << "    @QtBlockedEnum" << endl;
-    }
-
-    // Generates Dylan 1.5 type enums
-    s << "    public enum " << dylan_enum->name()
-    << " implements com.trolltech.qt.QtEnumerator {" << endl;
-    const AbstractMetaEnumValueList &values = dylan_enum->values();
-    EnumTypeEntry *entry = dylan_enum->typeEntry();
-
-    for (int i = 0; i < values.size(); ++i) {
-        AbstractMetaEnumValue *enum_value = values.at(i);
-
-        if (dylan_enum->typeEntry()->isEnumValueRejected(enum_value->name()))
-            continue;
-
-        s << "        " << enum_value->name() << "(" << enum_value->value() << ")";
-
-        if (i != values.size() - 1 || entry->isExtensible()) {
-            s << "," << endl;
-        }
-    }
-
-    if (entry->isExtensible())
-        s << "        CustomEnum(0)";
-
-    s << ";" << endl << endl;
-
-    s << "        " << dylan_enum->name() << "(int value) { this.value = value; }" << endl
-    << "        public int value() { return value; }" << endl
-    << endl;
-
-    // Write out the createQFlags() function if its a QFlags enum
-    if (entry->flags()) {
-        FlagsTypeEntry *flags_entry = entry->flags();
-        s << "        public static " << flags_entry->targetLangName() << " createQFlags("
-        << entry->targetLangName() << " ... values) {" << endl
-        << "            return new " << flags_entry->targetLangName() << "(values);" << endl
-        << "        }" << endl;
-    }
-
-    // The resolve functions. The public one that returns the right
-    // type and an internal one that has a generic signature. Makes it
-    // easier to find the right one from JNI.
-    s << "        public static " << dylan_enum->name() << " resolve(int value) {" << endl
-    << "            return (" << dylan_enum->name() << ") resolve_internal(value);" << endl
-    << "        }" << endl
-    << "        private static Object resolve_internal(int value) {" << endl
-    << "            switch (value) {" << endl;
-
-    for (int i = 0; i < values.size(); ++i) {
-        AbstractMetaEnumValue *e = values.at(i);
-
-        if (dylan_enum->typeEntry()->isEnumValueRejected(e->name()))
-            continue;
-
-        s << "            case " << e->value() << ": return " << e->name() << ";" << endl;
-    }
-
-    s << "            }" << endl;
-
-    if (entry->isExtensible()) {
-        s << "            if (enumCache == null)" << endl
-        << "                enumCache = new dylan.util.HashMap<Integer, " << dylan_enum->name()
-        << ">();" << endl
-        << "            " << dylan_enum->name() << " e = enumCache.get(value);" << endl
-        << "            if (e == null) {" << endl
-        << "                e = (" << dylan_enum->name() << ") com.trolltech.qt.GeneratorUtilities.createExtendedEnum("
-        << "value, CustomEnum.ordinal(), " << dylan_enum->name() << ".class, CustomEnum.name());"
-        << endl
-        << "                enumCache.put(value, e);" << endl
-        << "            }" << endl
-        << "            return e;" << endl;
-    } else {
-        s << "            throw new com.trolltech.qt.QNoSuchEnumValueException(value);" << endl;
-    }
-
-
-    s << "        }" << endl;
-
-    s << "        private final int value;" << endl
-    << endl;
-    if (entry->isExtensible()) {
-        s << "        private static dylan.util.HashMap<Integer, " << dylan_enum->name()
-        << "> enumCache;";
-    }
-    s << "    }" << endl;
-
-    // Write out the QFlags if present...
-    FlagsTypeEntry *flags_entry = entry->flags();
-    if (flags_entry) {
-        QString flagsName = flags_entry->targetLangName();
-        s << "    public static class " << flagsName << " extends com.trolltech.qt.QFlags<"
-        << dylan_enum->name() << "> {" << endl
-        << "        private static final long serialVersionUID = 1L;" << endl
-        << "        public " << flagsName << "(" << dylan_enum->name() << " ... args)"
-        << " { super(args); }" << endl
-        << "        public " << flagsName << "(int value) { setValue(value); }" << endl
-        << "    }" << endl << endl;
-    }
+    // TODO: fill this
 }
 
 void DylanGenerator::writePrivateNativeFunction(QTextStream &s, const AbstractMetaFunction *dylan_function) {
-    int exclude_attributes = AbstractMetaAttributes::Public | AbstractMetaAttributes::Protected;
-    int include_attributes = 0;
-
-    if (dylan_function->isEmptyFunction())
-        exclude_attributes |= AbstractMetaAttributes::Native;
-    else
-        include_attributes |= AbstractMetaAttributes::Native;
-
-//     if (!dylan_function->isConstructor())
-//         include_attributes |= AbstractMetaAttributes::Static;
-
-    writeFunctionAttributes(s, dylan_function, include_attributes, exclude_attributes,
-                            EnumAsInts
-                            | (dylan_function->isEmptyFunction()
-                               || dylan_function->isNormal()
-                               || dylan_function->isSignal() ? 0 : SkipReturnType));
-
-    if (dylan_function->isConstructor())
-        s << "void ";
-    s << dylan_function->marshalledName();
-
-    s << "(";
-
-    AbstractMetaArgumentList arguments = dylan_function->arguments();
-
-    if (!dylan_function->isStatic() && !dylan_function->isConstructor())
-        s << "long __this__nativeId";
-    for (int i = 0; i < arguments.count(); ++i) {
-        const AbstractMetaArgument *arg = arguments.at(i);
-
-        if (!dylan_function->argumentRemoved(i + 1)) {
-            if (i > 0 || (!dylan_function->isStatic() && !dylan_function->isConstructor()))
-                s << ", ";
-
-            if (!arg->type()->hasNativeId())
-                writeArgument(s, dylan_function, arg, EnumAsInts);
-            else
-                s << "long " << arg->argumentName();
-        }
-    }
-    s << ")";
-
-    // Make sure people don't call the private functions
-    if (dylan_function->isEmptyFunction()) {
-        s << endl
-        << INDENT << "{" << endl
-        << INDENT << "    throw new com.trolltech.qt.QNoImplementationException();" << endl
-        << INDENT << "}" << endl << endl;
-    } else {
-        s << ";" << endl;
-    }
+    // TODO: fill this (do we need it?)
 }
 
 static QString function_call_for_ownership(TypeSystem::Ownership owner) {
@@ -876,110 +697,20 @@ void DylanGenerator::writeFunction(QTextStream &s, const AbstractMetaFunction *m
         return ;
     QString functionName = dylan_function->name();
     setupForFunction(dylan_function, &included_attributes, &excluded_attributes);
+    const MetaDylanClass *dylan_owner_class = (const MetaDylanClass *)dylan_function->ownerClass();
 
-    s << "define C-function " << functionName << endl;
+    s << "define C-function ";
+    if (!dylan_function->isConstructor()) {
+      s << dylan_function->dylanName() << endl;
+    } else {
+      s << dylan_function->dylanConstructorName() << endl;
+    }
     if (!dylan_function->isStatic() && !dylan_function->isConstructor()) {
-      s << "  input parameter self :: " << dylan_function->ownerClass()->name() << ";" << endl;;
+      s << "  input parameter self :: " << dylan_owner_class->dylanName() << ";" << endl;;
     }
     writeFunctionArguments(s, dylan_function, dylan_function->arguments().count());
     s << endl << "  c-name: \"" << dylan_function->marshalledName() << "\";" << endl;
     s << "end;" << endl;
-    /*
-    if (!dylan_function->ownerClass()->isInterface()) {
-        writeEnumOverload(s, dylan_function, included_attributes, excluded_attributes);
-        writeFunctionOverloads(s, dylan_function, included_attributes, excluded_attributes);
-    }
-
-    static QRegExp regExp("^(insert|set|take|add|remove|install).*");
-
-    if (regExp.exactMatch(dylan_function->name())) {
-        AbstractMetaArgumentList arguments = dylan_function->arguments();
-
-        const AbstractMetaClass *c = dylan_function->implementingClass();
-        bool hasObjectTypeArgument = false;
-        foreach(AbstractMetaArgument *argument, arguments) {
-            TypeSystem::Ownership dylan_ownership = dylan_function->ownership(c, TypeSystem::TargetLangCode, argument->argumentIndex() + 1);
-            TypeSystem::Ownership shell_ownership = dylan_function->ownership(c, TypeSystem::ShellCode, argument->argumentIndex() + 1);
-
-            if (argument->type()->typeEntry()->isObject()
-                    && dylan_ownership == TypeSystem::InvalidOwnership
-                    && shell_ownership == TypeSystem::InvalidOwnership) {
-                hasObjectTypeArgument = true;
-                break;
-            }
-        }
-
-        if (hasObjectTypeArgument
-                && !dylan_function->isAbstract()
-                && dylan_function->referenceCounts(dylan_function->implementingClass()).size() == 0) {
-            m_reference_count_candidate_functions.append(dylan_function);
-        }
-    }
-
-
-    const QPropertySpec *spec = dylan_function->propertySpec();
-    if (spec && dylan_function->modifiedName() == dylan_function->originalName()) {
-        if (dylan_function->isPropertyReader()) {
-            s << "    @com.trolltech.qt.QtPropertyReader(name=\"" << spec->name() << "\")" << endl;
-            if (!spec->designable().isEmpty())
-                s << "    @com.trolltech.qt.QtPropertyDesignable(\"" << spec->designable() << "\")" << endl;
-        } else if (dylan_function->isPropertyWriter()) {
-            s << "    @com.trolltech.qt.QtPropertyWriter(name=\"" << spec->name() << "\")" << endl;
-        } else if (dylan_function->isPropertyResetter()) {
-            s << "    @com.trolltech.qt.QtPropertyResetter(name=\"" << spec->name() << "\")"
-            << endl;
-        }
-        if (spec->hasNotify()) {
-            // FIXME: NOTIFY signal is optional; need to understand what that means here
-            s << "    @com.trolltech.qt.QtPropertyNotify(name=\"" << spec->name() << "\", value=\"" << spec->notify() << "\")" << endl;
-        }
-        if (spec->hasRevision()) {
-            // FIXME: REVISION number is optional; need to understand what that means here
-            // FIXME: No check is made that this is an integer in spec->revision()
-            s << "    @com.trolltech.qt.QtPropertyRevision(name=\"" << spec->name() << "\", value=" << spec->revision() << ")" << endl;
-        }
-        if (spec->hasScriptable()) {
-            s << "    @com.trolltech.qt.QtPropertyScriptable(\"" << spec->scriptable() << "\")" << endl;
-        }
-        if (spec->hasStored()) {
-            // default is true (has to match 'false' word to be false, otherwise true)
-            bool bf = !(spec->stored().compare("false", Qt::CaseInsensitive) == 0);
-            s << "    @com.trolltech.qt.QtPropertyStored(" << (bf ? "true" : "false") << ")" << endl;
-        }
-        if (spec->hasUser()) {
-            // default is false (has to match 'true' word to be true, otherwise false)
-            bool bf = spec->user().compare("true", Qt::CaseInsensitive) == 0;
-            s << "    @com.trolltech.qt.QtPropertyUser(" << (bf ? "true" : "false") << ")" << endl;
-        }
-        if (spec->constant()) {
-            s << "    @com.trolltech.qt.QtPropertyConstant" << endl;
-        }
-        if (spec->final()) {
-            s << "    @com.trolltech.qt.QtPropertyFinal" << endl;
-        }
-    }
-
-    s << functionSignature(dylan_function, included_attributes, excluded_attributes);
-
-    if (dylan_function->isConstructor()) {
-        writeConstructorContents(s, dylan_function);
-    } else if (dylan_function->needsCallThrough()) {
-        if (dylan_function->isAbstract()) {
-            s << ";" << endl;
-        } else {
-            s << INDENT << "{" << endl;
-            {
-                Indentation indent(INDENT);
-                writeDylanCallThroughContents(s, dylan_function);
-            }
-            s << INDENT << "}" << endl;
-        }
-
-        writePrivateNativeFunction(s, dylan_function);
-    } else {
-        s << ";" << endl;
-    }
-    */
 }
 
 static void write_equals_parts(QTextStream &s, const AbstractMetaFunctionList &lst, char prefix, bool *first) {
@@ -1401,26 +1132,6 @@ void DylanGenerator::write(QTextStream &s, const AbstractMetaClass *abstract_cla
     s << "module:  " << dylan_class->package() << endl;
     s << "synopsis: generated bindings" << endl;
     s << "copyright: See LICENSE file in this distribution." << endl << endl;
-    /*
-
-    s << "package " << dylan_class->package() << ";" << endl << endl;
-
-    s << "import com.trolltech.qt.*;" << endl << endl;
-
-    QList<Include> includes = dylan_class->typeEntry()->extraIncludes();
-    foreach(const Include &inc, includes) {
-        if (inc.type == Include::TargetLangImport) {
-            s << inc.toString() << endl;
-        }
-    }
-    s << endl;
-
-    s << "@QtJambiGeneratedClass" << endl;
-
-    if ((dylan_class->typeEntry()->typeFlags() & ComplexTypeEntry::Deprecated) != 0) {
-        s << "@Deprecated" << endl;
-    }
-    */
 
     if (dylan_class->isInterface()) {
         s << "// interface" << endl;
@@ -1429,44 +1140,11 @@ void DylanGenerator::write(QTextStream &s, const AbstractMetaClass *abstract_cla
         if (dylan_class->isPublic())
             s << "define open C-subtype ";
         // else friendly
-
-        /*
-        bool force_abstract = (dylan_class->typeEntry()->typeFlags() & ComplexTypeEntry::ForceAbstract) != 0;
-        if (dylan_class->isFinal() && !force_abstract)
-            s << "final ";
-        if ((dylan_class->isAbstract() && !dylan_class->isNamespace()) || force_abstract)
-            s << "abstract ";
-
-        if (!dylan_class->typeEntry()->targetType().isEmpty()) {
-            s << dylan_class->typeEntry()->targetType() << " ";
-        } else if (dylan_class->isNamespace() && dylan_class->functionsInTargetLang().size() == 0) {
-            s << "interface ";
-        } else if (dylan_class->isNamespace()) {
-            s << "class ";
-        } else {
-            s << "class ";
-        }
-        */
-
     }
 
     const ComplexTypeEntry *type = dylan_class->typeEntry();
 
-    s << "<" << dylan_class->name() << ">";
-
-    /*
-    if (type->isGenericClass()) {
-        s << "<";
-        QList<TypeEntry *> templateArguments = dylan_class->templateBaseClass()->templateArguments();
-        for (int i = 0; i < templateArguments.size(); ++i) {
-            TypeEntry *templateArgument = templateArguments.at(i);
-            if (i > 0)
-                s << ", ";
-            s << templateArgument->name();
-        }
-        s << ">";
-    }
-    */
+    s << dylan_class->dylanName();
 
     // implementing interfaces...
     bool implements = false;
@@ -1475,7 +1153,8 @@ void DylanGenerator::write(QTextStream &s, const AbstractMetaClass *abstract_cla
     if ((!dylan_class->isInterface() && !dylan_class->isNamespace()) || !interfaces.isEmpty()) {
         s << " (";
         if (!dylan_class->baseClassName().isEmpty()) {
-            s << "<" << dylan_class->baseClass()->name() << ">";
+            MetaDylanClass *base_class = (MetaDylanClass *)dylan_class->baseClass();
+            s << base_class->dylanName();
         } else {
             QString sc = type->defaultSuperclass();
 
@@ -1488,217 +1167,25 @@ void DylanGenerator::write(QTextStream &s, const AbstractMetaClass *abstract_cla
             implements = true;
         }
         for (int i = 0; i < interfaces.size(); ++i) {
-            AbstractMetaClass *iface = interfaces.at(i);
-            //if (i != 0)
-                s << ", ";
-            s << "<" << iface->name() << ">";
+            MetaDylanClass *iface = (MetaDylanClass *)interfaces.at(i);
+            s << ", ";
+            s << iface->dylanName();
         }
 
         s << ")";
     }
-
-    /*
-    if (!dylan_class->isNamespace() && !dylan_class->isInterface()) {
-        if (!dylan_class->baseClassName().isEmpty()) {
-            s << " (<" << dylan_class->baseClass()->name() << ">)";
-        } else {
-            QString sc = type->defaultSuperclass();
-
-            if (!sc.isEmpty())
-                s << " extends " << sc;
-        }
-    } else if (dylan_class->isInterface()) {
-        s << " extends QtJambiInterface";
-    }
-
-    // implementing interfaces...
-    bool implements = false;
-    AbstractMetaClassList interfaces = dylan_class->interfaces();
-
-    if (!interfaces.isEmpty()) {
-        if (dylan_class->isInterface())
-            s << ", ";
-        else {
-            s << endl << "    implements ";
-            implements = true;
-        }
-        for (int i = 0; i < interfaces.size(); ++i) {
-            AbstractMetaClass *iface = interfaces.at(i);
-            if (i != 0)
-                s << "," << endl << "            ";
-            s << iface->package() << "." << iface->name();
-        }
-    }
-
-    if (isComparable(dylan_class)) {
-        if (!implements) {
-            implements = true;
-            s << endl << "    implements ";
-        } else {
-            s << "," << endl << "            ";
-        }
-        s << "dylan.lang.Comparable<Object>";
-    }
-
-    if (dylan_class->hasCloneOperator()) {
-        if (!implements) {
-            implements = true;
-            s << endl << "    implements ";
-        } else {
-            s << "," << endl << "            ";
-        }
-        s << "dylan.lang.Cloneable";
-    }
-
-    if (!dylan_class->typeEntry()->implements().isEmpty()) {
-        if (!implements) {
-            implements = true;
-            s << endl << "    implements ";
-        } else {
-            s << "," << endl << "            ";
-        }
-        s << dylan_class->typeEntry()->implements();
-    }
-    */
     s << endl << "end;" << endl;
 
-    //s << endl << "{" << endl;
-
     Indentation indent(INDENT);
-
-    // Define variables for reference count mechanism
-    if (!dylan_class->isInterface() && !dylan_class->isNamespace()) {
-        QHash<QString, int> variables;
-        foreach(AbstractMetaFunction *function, dylan_class->functions()) {
-            QList<ReferenceCount> referenceCounts = function->referenceCounts(dylan_class);
-            foreach(ReferenceCount refCount, referenceCounts) {
-                variables[refCount.variableName] |=
-                    refCount.action
-                    | refCount.access
-                    | (refCount.threadSafe ? ReferenceCount::ThreadSafe : 0)
-                    | (function->isStatic() ? ReferenceCount::Static : 0)
-                    | (refCount.declareVariable.isEmpty() ? ReferenceCount::DeclareVariable : 0);
-            }
-        }
-
-        foreach(QString variableName, variables.keys()) {
-            int actions = variables.value(variableName) & ReferenceCount::ActionsMask;
-            bool threadSafe = variables.value(variableName) & ReferenceCount::ThreadSafe;
-            bool isStatic = variables.value(variableName) & ReferenceCount::Static;
-            bool declareVariable = variables.value(variableName) & ReferenceCount::DeclareVariable;
-            int access = variables.value(variableName) & ReferenceCount::AccessMask;
-
-            if (actions == ReferenceCount::Ignore || !declareVariable)
-                continue;
-
-            if (((actions & ReferenceCount::Add) == 0) != ((actions & ReferenceCount::Remove) == 0)) {
-                QString warn = QString("either add or remove specified for reference count variable '%1' in '%2' but not both")
-                               .arg(variableName).arg(dylan_class->fullName());
-                ReportHandler::warning(warn);
-            }
-            s << endl;
-
-            if (TypeDatabase::instance()->includeEclipseWarnings())
-                s << INDENT << "@SuppressWarnings(\"unused\")" << endl;
-
-            s << INDENT;
-            switch (access) {
-                case ReferenceCount::Private:
-                    s << "private "; break;
-                case ReferenceCount::Protected:
-                    s << "protected "; break;
-                case ReferenceCount::Public:
-                    s << "public "; break;
-                default:
-                    ; // friendly
-            }
-
-            if (isStatic)
-                s << "static ";
-
-            /*
-            if (actions != ReferenceCount::Set && actions != ReferenceCount::Ignore) {
-                s << "dylan.util.Collection<Object> " << variableName << " = ";
-
-                if (threadSafe)
-                    s << "dylan.util.Collections.synchronizedCollection(";
-                s << "new dylan.util.ArrayList<Object>()";
-                if (threadSafe)
-                    s << ")";
-                s << ";" << endl;
-            } else if (actions != ReferenceCount::Ignore) {
-
-                if (threadSafe)
-                    s << "synchronized ";
-                s << "Object " << variableName << " = null;" << endl;
-            }
-            */
-        }
-    }
-
-    /*
-    if (!dylan_class->isInterface() && (!dylan_class->isNamespace() || dylan_class->functionsInTargetLang().size() > 0)
-            && (dylan_class->baseClass() == 0 || dylan_class->package() != dylan_class->baseClass()->package())) {
-        s << endl
-        << INDENT << "static {" << endl;
-
-        if (dylan_class->isNamespace()) {
-            s << INDENT << "    com.trolltech.qt.QtJambi_LibraryInitializer.init();" << endl;
-        }
-
-        s << INDENT << "    " << dylan_class->package() << ".QtJambi_LibraryInitializer.init();" << endl
-        << INDENT << "}" << endl;
-    }
-    */
-
-    if (!dylan_class->isInterface() && dylan_class->isAbstract()) {
-        s << endl;
-
-        if (TypeDatabase::instance()->includeEclipseWarnings())
-            s << INDENT << "@SuppressWarnings(\"unused\")" << endl;
-
-        s << INDENT << "private static class ConcreteWrapper extends " << dylan_class->fullName() << " {" << endl;
-
-        {
-            Indentation indent(INDENT);
-            s << INDENT << "protected ConcreteWrapper(QPrivateConstructor p) { super(p); }" << endl;
-
-            uint exclude_attributes = AbstractMetaAttributes::Native | AbstractMetaAttributes::Abstract;
-            uint include_attributes = 0;
-            AbstractMetaFunctionList functions = dylan_class->queryFunctions(AbstractMetaClass::NormalFunctions | AbstractMetaClass::AbstractFunctions | AbstractMetaClass::NonEmptyFunctions | AbstractMetaClass::NotRemovedFromTargetLang);
-            foreach(const AbstractMetaFunction *dylan_function, functions) {
-                retrieveModifications(dylan_function, dylan_class, &exclude_attributes, &include_attributes);
-
-                s << endl
-                << INDENT << "@Override" << endl;
-                writeFunctionAttributes(s, dylan_function, include_attributes, exclude_attributes,
-                                        dylan_function->isNormal() || dylan_function->isSignal() ? 0 : SkipReturnType);
-
-                s << dylan_function->name() << "(";
-                writeFunctionArguments(s, dylan_function, dylan_function->arguments().count());
-                s << ") {" << endl;
-                {
-                    Indentation indent(INDENT);
-                    writeDylanCallThroughContents(s, dylan_function, SuperCall);
-                }
-                s << INDENT << "}" << endl;
-            }
-        }
-        s  << INDENT << "}" << endl << endl;
-    }
-
-    // Enums
-    foreach(AbstractMetaEnum *dylan_enum, dylan_class->enums())
-        writeEnum(s, dylan_enum);
-    if (!dylan_class->enums().isEmpty() && !dylan_class->functions().isEmpty())
-        s << endl;
-
+/*
+ * TODO: emit signals
     // Signals
     AbstractMetaFunctionList signal_funcs = dylan_class->queryFunctions(AbstractMetaClass::Signals
                                             | AbstractMetaClass::ClassImplements
                                             | AbstractMetaClass::NotRemovedFromTargetLang);
     for (int i = 0; i < signal_funcs.size(); ++i)
         writeSignal(s, signal_funcs.at(i));
+*/
 
     // Class has subclasses but also only private constructors
     if (!dylan_class->isFinalInTargetLang() && dylan_class->isFinalInCpp()) {
@@ -1751,6 +1238,8 @@ void DylanGenerator::write(QTextStream &s, const AbstractMetaClass *abstract_cla
         }
     }
 
+/*
+    TODO: emit field accessors
     // Field accessors
     AbstractMetaFieldList fields = dylan_class->fields();
     foreach(const AbstractMetaField *field, fields) {
@@ -1758,76 +1247,7 @@ void DylanGenerator::write(QTextStream &s, const AbstractMetaClass *abstract_cla
             writeFieldAccessors(s, field);
         }
     }
-
-    // the static fromNativePointer function...
-    if (!dylan_class->isNamespace() && !dylan_class->isInterface() && !fakeClass) {
-        s << endl
-        << INDENT << "public static native " << dylan_class->name() << " fromNativePointer("
-        << "QNativePointer nativePointer);" << endl;
-    }
-
-    if (dylan_class->isQObject()) {
-        s << endl;
-        if (TypeDatabase::instance()->includeEclipseWarnings())
-            s << INDENT << "@SuppressWarnings(\"unused\")" << endl;
-
-        s << INDENT << "private static native long originalMetaObject();" << endl;
-    }
-
-    // The __qt_signalInitialization() function
-    if (signal_funcs.size() > 0) {
-        s << endl
-        << INDENT << "@Override" << endl
-        << INDENT << "@QtBlockedSlot protected boolean __qt_signalInitialization(String name) {" << endl
-        << INDENT << "    return (__qt_signalInitialization(nativeId(), name)" << endl
-        << INDENT << "            || super.__qt_signalInitialization(name));" << endl
-        << INDENT << "}" << endl
-        << endl
-        << INDENT << "@QtBlockedSlot" << endl
-        << INDENT << "private native boolean __qt_signalInitialization(long ptr, String name);" << endl;
-    }
-
-    // Add dummy constructor for use when constructing subclasses
-    if (!dylan_class->isNamespace() && !dylan_class->isInterface() && !fakeClass) {
-        s << endl
-        << INDENT << "protected "
-        << dylan_class->name()
-        << "(QPrivateConstructor p) { super(p); } "
-        << endl;
-    }
-
-    // Add a function that converts an array of the value type to a QNativePointer
-    if (dylan_class->typeEntry()->isValue() && !fakeClass) {
-        s << endl
-        << INDENT << "public static native QNativePointer nativePointerArray(" << dylan_class->name()
-        << " array[]);" << endl;
-    }
-
-    // write the cast to this function....
-    if (dylan_class->isInterface()) {
-        s << endl
-        << "    public long __qt_cast_to_"
-        << static_cast<const InterfaceTypeEntry *>(type)->origin()->targetLangName()
-        << "(long ptr);" << endl;
-    } else {
-        foreach(AbstractMetaClass *cls, interfaces) {
-            s << endl
-            << "    @QtBlockedSlot public native long __qt_cast_to_"
-            << static_cast<const InterfaceTypeEntry *>(cls->typeEntry())->origin()->targetLangName()
-            << "(long ptr);" << endl;
-        }
-    }
-
-    writeDylanLangObjectOverrideFunctions(s, dylan_class);
-    writeExtraFunctions(s, dylan_class);
-    writeToStringFunction(s, dylan_class);
-
-    if (dylan_class->hasCloneOperator() && !alreadyHasCloneMethod) {
-        writeCloneFunction(s, dylan_class);
-    }
-
-    QString lid_file_name = dylan_class->package().replace(".", "_") + "/" + dylan_class->package().replace(".", "_") + ".lid";
-    lidGenerator->addBinding(lid_file_name, fileNameForClass(dylan_class));
+*/
 }
 
 void DylanGenerator::generate() {

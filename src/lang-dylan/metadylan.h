@@ -63,12 +63,18 @@ class MetaDylanFunction : public AbstractMetaFunction {
         }
 
         /*override*/ bool needsCallThrough() const;
+        QString dylanName() const;
+        QString dylanConstructorName() const;
 };
 
 class MetaDylanEnumValue : public AbstractMetaEnumValue {};
 
 class MetaDylanEnum : public AbstractMetaEnum {};
 
-class MetaDylanClass : public AbstractMetaClass {};
+class MetaDylanClass : public AbstractMetaClass {
+    public:
+        QString dylanName() const;
+        QString package() const;
+};
 
 #endif // METADYLAN_H

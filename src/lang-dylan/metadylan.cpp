@@ -41,3 +41,33 @@ bool MetaDylanFunction::needsCallThrough() const {
         return false;
     return AbstractMetaFunction::needsCallThrough();
 }
+
+QString MetaDylanFunction::dylanName() const {
+  // convert from camelCase to dylan-style
+  static QRegExp re1("(.)([A-Z][a-z]+)");
+  static QRegExp re2("([a-z0-9])([A-Z])");
+  QString function_name = name();
+  const MetaDylanClass *owner_class = (const MetaDylanClass *)ownerClass();
+
+  function_name.replace(re1, "\\1-\\2");
+  function_name.replace(re2, "\\1-\\2");
+  function_name = function_name.toLower();
+
+  // prefix with class name
+  function_name = owner_class->name().toLower() + "-" + function_name;
+  return function_name;
+}
+
+QString MetaDylanFunction::dylanConstructorName() const {
+  QString function_name = name();
+  return function_name;
+}
+
+QString MetaDylanClass::dylanName() const {
+  return "<" + name() + ">";
+}
+
+// TODO: return the real module name
+QString MetaDylanClass::package() const {
+  return "qt-core";
+}
