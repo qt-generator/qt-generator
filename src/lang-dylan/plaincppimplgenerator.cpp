@@ -572,8 +572,8 @@ void PlainCppImplGenerator::write(QTextStream &s, const AbstractMetaClass *java_
 
     s << endl << endl;
 
-    QString pro_file_name = java_class->package().replace(".", "_") + "/" + java_class->package().replace(".", "_") + ".pri";
-    priGenerator->addSource(pro_file_name, fileNameForClass(java_class));
+    QString lid_file_name = java_class->package().replace(".", "_") + "/" + java_class->package().replace(".", "_") + ".lid";
+    lidGenerator->addSource(lid_file_name, fileNameForClass(java_class));
 }
 
 void PlainCppImplGenerator::writeExtraFunctions(QTextStream &s, const AbstractMetaClass *java_class) {

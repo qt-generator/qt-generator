@@ -76,7 +76,7 @@ QString GeneratorSetDylan::generate() {
 
     // Code generation
     QList<Generator *> generators;
-    PriGenerator *priGenerator = new PriGenerator;
+    LidGenerator *lidGenerator = new LidGenerator;
     DylanGenerator *dylan_generator = 0;
     PlainCppHeaderGenerator *cpp_header_generator = 0;
     PlainCppImplGenerator *cpp_impl_generator = 0;
@@ -92,17 +92,22 @@ QString GeneratorSetDylan::generate() {
 
     contexts << "DylanGenerator";
 
-    cpp_header_generator = new PlainCppHeaderGenerator(priGenerator);
+    cpp_header_generator = new PlainCppHeaderGenerator(lidGenerator);
     if (!cppOutDir.isNull())
         cpp_header_generator->setCppOutputDirectory(cppOutDir);
     generators << cpp_header_generator;
     contexts << "PlainCppHeaderGenerator";
 
-    cpp_impl_generator = new PlainCppImplGenerator(priGenerator);
+    cpp_impl_generator = new PlainCppImplGenerator(lidGenerator);
     if (!cppOutDir.isNull())
         cpp_impl_generator->setCppOutputDirectory(cppOutDir);
     generators << cpp_impl_generator;
     contexts << "PlainCppImplGenerator";
+
+    if (!cppOutDir.isNull())
+        lidGenerator->setCppOutputDirectory(cppOutDir);
+    generators << lidGenerator;
+    contexts << "LidGenerator";
 
     for (int i = 0; i < generators.size(); ++i) {
         Generator *generator = generators.at(i);
@@ -123,6 +128,7 @@ QString GeneratorSetDylan::generate() {
                   "  - dylan.....: %2 (%3)\n"
                   "  - cpp-impl..: %4 (%5)\n"
                   "  - cpp-h.....: %6 (%7)\n"
+                  "  - lid.......: %8 (%9)\n"
                  )
           .arg(builder.classes().size())
           .arg(dylan_generator ? dylan_generator->numGenerated() : 0)
@@ -130,7 +136,9 @@ QString GeneratorSetDylan::generate() {
           .arg(cpp_impl_generator ? cpp_impl_generator->numGenerated() : 0)
           .arg(cpp_impl_generator ? cpp_impl_generator->numGeneratedAndWritten() : 0)
           .arg(cpp_header_generator ? cpp_header_generator->numGenerated() : 0)
-          .arg(cpp_header_generator ? cpp_header_generator->numGeneratedAndWritten() : 0);
+          .arg(cpp_header_generator ? cpp_header_generator->numGeneratedAndWritten() : 0)
+          .arg(lidGenerator->numGenerated())
+          .arg(lidGenerator->numGeneratedAndWritten());
 
     return res;
 }

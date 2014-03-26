@@ -22,6 +22,7 @@ SET(qt_generator_SOURCES
 
     lang-dylan/dylangenerator.cpp
     lang-dylan/generatorsetdylan.cpp
+    lang-dylan/lidgenerator.cpp
     lang-dylan/metadylan.cpp
     lang-dylan/metadylanbuilder.cpp
     lang-dylan/plaincppgenerator.cpp
@@ -81,6 +82,7 @@ SET(qt_generator_HEADERS
 
     lang-dylan/dylangenerator.h
     lang-dylan/generatorsetdylan.h
+    lang-dylan/lidgenerator.h
     lang-dylan/plaincppgenerator.h
     lang-dylan/plaincppheadergenerator.h
     lang-dylan/plaincppimplgenerator.h

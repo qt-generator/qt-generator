@@ -39,7 +39,7 @@
 
 #include "abstractmetalang.h"
 #include "generator.h"
-#include "prigenerator.h"
+#include "lidgenerator.h"
 
 class PlainCppGenerator : public Generator {
         Q_OBJECT
@@ -93,7 +93,7 @@ class PlainCppGenerator : public Generator {
         }
 
     protected:
-        PriGenerator *priGenerator;
+        LidGenerator *lidGenerator;
         QString m_cpp_out_dir;
 
 };

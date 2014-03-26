@@ -44,8 +44,8 @@ class PlainCppHeaderGenerator : public PlainCppGenerator {
         Q_OBJECT
 
     public:
-        PlainCppHeaderGenerator(PriGenerator *pri) {
-            priGenerator = pri;
+        PlainCppHeaderGenerator(LidGenerator *lid) {
+            lidGenerator = lid;
         }
 
         virtual QString fileNameForClass(const AbstractMetaClass *cls) const;

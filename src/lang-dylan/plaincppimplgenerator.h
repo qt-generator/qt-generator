@@ -60,9 +60,9 @@ class PlainCppImplGenerator : public PlainCppGenerator {
             StandardJNISignature = JNIExport | ReturnType | ExternC
         };
 
-        PlainCppImplGenerator(PriGenerator *pri)
+        PlainCppImplGenerator(LidGenerator *lid)
                 : m_native_jump_table(false) {
-            priGenerator = pri;
+            lidGenerator = lid;
         }
 
         virtual QString fileNameForClass(const AbstractMetaClass *cls) const;

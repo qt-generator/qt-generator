@@ -136,12 +136,12 @@ void PlainCppHeaderGenerator::write(QTextStream &s, const AbstractMetaClass *jav
 
     writeWrapperClass(s, java_class);
 
-    QString pro_file_name = java_class->package().replace(".", "_") + "/" +
-                            java_class->package().replace(".", "_") + ".pri";
+    QString lid_file_name = java_class->package().replace(".", "_") + "/" +
+                            java_class->package().replace(".", "_") + ".lid";
 
     if (!java_class->generateShellClass()) {
         s << "#endif" << endl << endl;
-        priGenerator->addHeader(pro_file_name, fileNameForClass(java_class));
+        lidGenerator->addHeader(lid_file_name, fileNameForClass(java_class));
         return ;
     }
 
@@ -208,7 +208,7 @@ void PlainCppHeaderGenerator::write(QTextStream &s, const AbstractMetaClass *jav
     s  << "};" << endl << endl
     << "#endif // " << include_block << endl;
 
-    priGenerator->addHeader(pro_file_name, fileNameForClass(java_class));
+    lidGenerator->addHeader(lid_file_name, fileNameForClass(java_class));
 }
 
 
