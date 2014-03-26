@@ -57,7 +57,7 @@ class LidGenerator : public Generator {
         QString cppOutputDirectory() const {
             if (!m_cpp_out_dir.isNull())
                 return m_cpp_out_dir;
-            return outputDirectory() + QLatin1String("/cpp");
+            return outputDirectory() + QLatin1String("/dylan");
         }
         void setCppOutputDirectory(const QString &cppOutDir) { m_cpp_out_dir = cppOutDir; }
 

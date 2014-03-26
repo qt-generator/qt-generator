@@ -39,6 +39,7 @@
 
 #include "abstractmetalang.h"
 #include "plaincppgenerator.h"
+#include "metadylan.h"
 
 enum JNISignatureFormat {
     Underscores,        //!< Used in the jni exported function names

@@ -58,7 +58,7 @@ void LidGenerator::generate() {
         FileOut file(resolveOutputDirectory() + "/" + lid.key());
         file.stream << "Library: xxx\n";
         file.stream << "Target-Type: dll\n";
-        file.stream << "Files: library.dylan\n";
+        file.stream << "Files: library\n";
         QStringList list = lid.value().bindings;
         qSort(list.begin(), list.end());
         foreach(const QString &entry, list) {

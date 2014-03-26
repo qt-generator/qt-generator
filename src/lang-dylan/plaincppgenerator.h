@@ -40,6 +40,7 @@
 #include "abstractmetalang.h"
 #include "generator.h"
 #include "lidgenerator.h"
+#include "metadylan.h"
 
 class PlainCppGenerator : public Generator {
         Q_OBJECT
@@ -50,16 +51,17 @@ class PlainCppGenerator : public Generator {
         QString cppOutputDirectory() const {
             if (!m_cpp_out_dir.isNull())
                 return m_cpp_out_dir;
-            return outputDirectory() + QLatin1String("/cpp");
+            return outputDirectory() + QLatin1String("/dylan");
         }
         void setCppOutputDirectory(const QString &cppOutDir) { m_cpp_out_dir = cppOutDir; }
 
         static inline QString subDirectoryForPackage(const QString &package) {
-            return QString(package).replace(".", "_");
+            return QString(package);
         }
 
         virtual QString subDirectoryForClass(const AbstractMetaClass *cls) const {
-            return subDirectoryForPackage(cls->package()) + "/";
+            MetaDylanClass *dylan_class = (MetaDylanClass *)cls;
+            return subDirectoryForPackage(dylan_class->package()) + "/";
         }
 
         static QString fixNormalizedSignatureForQt(const QString &signature);

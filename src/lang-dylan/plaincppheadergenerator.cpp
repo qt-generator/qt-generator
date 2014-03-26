@@ -89,7 +89,8 @@ void PlainCppHeaderGenerator::writeWrapperClass(QTextStream &s, const AbstractMe
     << "};" << endl << endl;
 }
 
-void PlainCppHeaderGenerator::write(QTextStream &s, const AbstractMetaClass *java_class) {
+void PlainCppHeaderGenerator::write(QTextStream &s, const AbstractMetaClass *abstract_class) {
+    MetaDylanClass *java_class = (MetaDylanClass *)abstract_class;
     QString include_block = "QTC_" + java_class->name().toUpper() + "_H";
 
     s << "#ifndef " << include_block << endl
@@ -136,8 +137,8 @@ void PlainCppHeaderGenerator::write(QTextStream &s, const AbstractMetaClass *jav
 
     writeWrapperClass(s, java_class);
 
-    QString lid_file_name = java_class->package().replace(".", "_") + "/" +
-                            java_class->package().replace(".", "_") + ".lid";
+    QString lid_file_name = java_class->package() + "/" +
+                            java_class->package().replace("-", "_") + ".lid";
 
     if (!java_class->generateShellClass()) {
         s << "#endif" << endl << endl;
