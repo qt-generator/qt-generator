@@ -56,21 +56,38 @@ void LidGenerator::generate() {
         lid.next();
 
         FileOut file(resolveOutputDirectory() + "/" + lid.key());
-        file.stream << "HEADERS += \\\n";
-        QStringList list = lid.value().headers;
+        file.stream << "Library: xxx\n";
+        file.stream << "Target-Type: dll\n";
+        file.stream << "Files: library.dylan\n";
+        QStringList list = lid.value().bindings;
         qSort(list.begin(), list.end());
         foreach(const QString &entry, list) {
-            file.stream << "           $$PWD/" << entry << " \\\n";
+            file.stream << "        " << entry << "\n";
         }
-        file.stream << "\n";
 
-        file.stream << "SOURCES += \\\n";
+        file.stream << "C-Header-Files: ";
+        bool first = true;
+        list = lid.value().headers;
+        qSort(list.begin(), list.end());
+        foreach(const QString &entry, list) {
+            if (!first) {
+                file.stream << "        ";
+            }
+            file.stream << entry << "\n";
+            first = false;
+        }
+
+        file.stream << "C-Source-Files: ";
+        first = true;
         list = lid.value().sources;
         qSort(list.begin(), list.end());
         foreach(const QString &entry, list) {
-            file.stream << "           $$PWD/" << entry << " \\\n";
+            if (!first) {
+                file.stream << "        ";
+            }
+            file.stream << entry << "\n";
+            first = false;
         }
-        file.stream << "\n\n";
 
         if (file.done())
             ++m_num_generated_written;
