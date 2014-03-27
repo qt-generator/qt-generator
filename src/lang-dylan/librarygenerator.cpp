@@ -49,10 +49,22 @@ void LibraryGenerator::generate() {
       module.next();
 
       FileOut file(resolveOutputDirectory() + "/" + module.key() + "/library.dylan");
-      file.stream << "Module: dylan-user\n";
-      file.stream << "\ndefine module " << module.key() << endl;
+      file.stream << "module: dylan-user\n";
+      file.stream << "copyright: See LICENSE file in this distribution.\n";
       QStringList list = module.value().bindings.values();
       qSort(list.begin(), list.end());
+      file.stream << "\ndefine library " << module.key() << endl;
+      file.stream << "  use dylan;\n";
+      file.stream << "  use common-dylan;\n";
+      file.stream << "  use c-ffi;\n\n";
+
+      file.stream << "  export " << module.key() << ";\n";
+      file.stream << "end library;\n";
+
+      file.stream << "\ndefine module " << module.key() << endl;
+      file.stream << "  use dylan;\n";
+      file.stream << "  use common-dylan;\n";
+      file.stream << "  use c-ffi;\n\n";
       file.stream << "  export\n";
       bool is_first = true;
       foreach(const QString &entry, list) {
