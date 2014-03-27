@@ -54,13 +54,25 @@ QString MetaDylanFunction::dylanName() const {
   function_name = function_name.toLower();
 
   // prefix with class name
-  function_name = owner_class->name().toLower() + "-" + function_name;
-  return function_name;
+  function_name = owner_class->name() + "-" + function_name;
+  for (int i = 0; i < arguments().count(); ++i) {
+    if (!argumentRemoved(i + 1)) {
+      AbstractMetaArgument *arg = arguments().at(i);
+      function_name += "-" + arg->type()->name();
+    }
+  }
+  return function_name.toLower();
 }
 
 QString MetaDylanFunction::dylanConstructorName() const {
   QString function_name = name();
-  return function_name;
+  for (int i = 0; i < arguments().count(); ++i) {
+    if (!argumentRemoved(i + 1)) {
+      AbstractMetaArgument *arg = arguments().at(i);
+      function_name += "-" + arg->type()->name();
+    }
+  }
+  return function_name.toLower();
 }
 
 QString MetaDylanFunction::package() const {
