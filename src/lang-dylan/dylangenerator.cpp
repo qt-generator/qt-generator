@@ -1159,30 +1159,25 @@ void DylanGenerator::write(QTextStream &s, const AbstractMetaClass *abstract_cla
     bool implements = false;
     AbstractMetaClassList interfaces = dylan_class->interfaces();
 
-    if ((!dylan_class->isInterface() && !dylan_class->isNamespace()) || !interfaces.isEmpty()) {
-        s << " (";
-        if (!dylan_class->baseClassName().isEmpty()) {
-            MetaDylanClass *base_class = (MetaDylanClass *)dylan_class->baseClass();
-            s << base_class->dylanName();
-        } else {
-            QString sc = type->defaultSuperclass();
-
-            if (!sc.isEmpty())
-                s << "<C-void*>";
-        }
-        if (!interfaces.isEmpty() && dylan_class->isInterface())
-            s << ", ";
-        else {
-            implements = true;
-        }
-        for (int i = 0; i < interfaces.size(); ++i) {
-            MetaDylanClass *iface = (MetaDylanClass *)interfaces.at(i);
-            s << ", ";
-            s << iface->dylanName();
-        }
-
-        s << ")";
+    s << " (";
+    if (!dylan_class->baseClassName().isEmpty()) {
+        MetaDylanClass *base_class = (MetaDylanClass *)dylan_class->baseClass();
+        s << base_class->dylanName();
+    } else {
+        s << "<C-void*>";
     }
+    if (!interfaces.isEmpty() && dylan_class->isInterface())
+        s << ", ";
+    else {
+        implements = true;
+    }
+    for (int i = 0; i < interfaces.size(); ++i) {
+        MetaDylanClass *iface = (MetaDylanClass *)interfaces.at(i);
+        s << ", ";
+        s << iface->dylanName();
+    }
+
+    s << ")";
     s << endl << "end;" << endl;
 
     Indentation indent(INDENT);
