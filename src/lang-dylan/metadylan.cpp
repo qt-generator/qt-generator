@@ -68,6 +68,17 @@ QString MetaDylanFunction::package() const {
   return owner->package();
 }
 
+QString MetaDylanEnumValue::dylanName() const {
+  return "$" + name();
+}
+
+QString MetaDylanEnum::dylanName() const {
+  if (enclosingClass())
+    return "<" + enclosingClass()->name() + name() + ">";
+  else
+    return "<" + name() + ">";
+}
+
 QString MetaDylanClass::dylanName() const {
   return "<" + name() + ">";
 }

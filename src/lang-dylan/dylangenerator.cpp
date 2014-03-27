@@ -184,12 +184,23 @@ void DylanGenerator::writeArgument(QTextStream &s,
 }
 
 
-void DylanGenerator::writeIntegerEnum(QTextStream &s, const AbstractMetaEnum *dylan_enum) {
-    // TODO: fill this
+void DylanGenerator::writeIntegerEnum(QTextStream &s, const AbstractMetaEnum *abstract_enum) {
+    MetaDylanEnum *dylan_enum = (MetaDylanEnum *)abstract_enum;
+    const AbstractMetaEnumValueList &values = dylan_enum->values();
+    s << endl;
+    for (int i = 0; i < values.size(); ++i) {
+        MetaDylanEnumValue *value = (MetaDylanEnumValue *)values.at(i);
+
+        if (dylan_enum->typeEntry()->isEnumValueRejected(value->name()))
+            continue;
+        s << "define constant " << value->dylanName() << " = " << value->value() << ";\n";
+    }
+    s << "define constant " << dylan_enum->dylanName() << " = <C-int>;\n";
+    s << endl;
 }
 
 void DylanGenerator::writeEnum(QTextStream &s, const AbstractMetaEnum *dylan_enum) {
-    // TODO: fill this
+    writeIntegerEnum(s, dylan_enum);
 }
 
 void DylanGenerator::writePrivateNativeFunction(QTextStream &s, const AbstractMetaFunction *dylan_function) {
@@ -1179,6 +1190,11 @@ void DylanGenerator::write(QTextStream &s, const AbstractMetaClass *abstract_cla
 
     s << ")";
     s << endl << "end;" << endl;
+
+    foreach(AbstractMetaEnum *dylan_enum, dylan_class->enums())
+        writeEnum(s, dylan_enum);
+    if (!dylan_class->enums().isEmpty() && !dylan_class->functions().isEmpty())
+        s << endl;
 
     Indentation indent(INDENT);
 /*

@@ -68,9 +68,15 @@ class MetaDylanFunction : public AbstractMetaFunction {
         QString package() const;
 };
 
-class MetaDylanEnumValue : public AbstractMetaEnumValue {};
+class MetaDylanEnumValue : public AbstractMetaEnumValue {
+    public:
+        QString dylanName() const;
+};
 
-class MetaDylanEnum : public AbstractMetaEnum {};
+class MetaDylanEnum : public AbstractMetaEnum {
+    public:
+        QString dylanName() const;
+};
 
 class MetaDylanClass : public AbstractMetaClass {
     public:
