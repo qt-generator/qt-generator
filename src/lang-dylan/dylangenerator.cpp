@@ -116,7 +116,7 @@ QString DylanGenerator::translateType(const AbstractMetaType *dylan_type, const 
             if (option & EnumAsInts)
                 s = "<integer>";
             else
-                s = dylan_type->name();
+                s = "<" + context->name() + dylan_type->name() + ">";
         }
     } else {
         if (dylan_type->isPrimitive() && (option & BoxedPrimitive)) {
@@ -148,7 +148,7 @@ QString DylanGenerator::translateType(const AbstractMetaType *dylan_type, const 
             const TypeEntry *type = dylan_type->typeEntry();
             if (type->designatedInterface())
                 type = type->designatedInterface();
-            s = type->name();
+            s = "<" + type->name() + ">";
         }
     }
 
@@ -165,14 +165,14 @@ QString DylanGenerator::argumentString(const AbstractMetaFunction *dylan_functio
         arg += dylan_argument->argumentName();
     }
 
-    arg += " :: <";
+    arg += " :: ";
 
     if (modified_type.isEmpty())
         arg += translateType(dylan_argument->type(), dylan_function->implementingClass(), (Option) options);
     else
         arg += modified_type;
 
-    arg += ">;";
+    arg += ";";
     return arg;
 }
 
