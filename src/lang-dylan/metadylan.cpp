@@ -96,11 +96,11 @@ QString MetaDylanFunction::marshalledName(Options options) const {
     foreach(const AbstractMetaArgument *arg, arguments) {
         returned += "_";
         if (arg->type()->isNativePointer()) {
-            returned += "nativepointer" + arg->type()->name().replace("[]", "_3").replace(".", "_");
+            returned += "nativepointer" + arg->type()->name().replace("[]", "_3").replace(".", "_").replace("-", "_");
         } else if (arg->type()->isIntegerEnum() || arg->type()->isIntegerFlags()) {
             returned += "int";
         } else {
-            returned += arg->type()->typeEntry()->jniName().replace("[]", "_3").replace(".", "_");
+            returned += arg->type()->typeEntry()->jniName().replace("[]", "_3").replace(".", "_").replace("-", "_");
         }
     }
 
