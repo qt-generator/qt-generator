@@ -148,7 +148,7 @@ QString DylanGenerator::translateType(const AbstractMetaType *dylan_type, const 
             const TypeEntry *type = dylan_type->typeEntry();
             if (type->designatedInterface())
                 type = type->designatedInterface();
-            s = "<" + type->name() + ">";
+            s = "<" + type->targetLangName() + ">";
         }
     }
 
@@ -193,7 +193,7 @@ void DylanGenerator::writeIntegerEnum(QTextStream &s, const AbstractMetaEnum *ab
 
         if (dylan_enum->typeEntry()->isEnumValueRejected(value->name()))
             continue;
-        s << "define constant " << value->dylanName() << " = " << value->value() << ";\n";
+        s << "define constant " << dylan_enum->dylanName() << value->dylanName() << " = " << value->value() << ";\n";
     }
     s << "define constant " << dylan_enum->dylanName() << " = <C-int>;\n";
     s << endl;

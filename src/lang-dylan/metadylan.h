@@ -66,6 +66,7 @@ class MetaDylanFunction : public AbstractMetaFunction {
         QString dylanName() const;
         QString dylanConstructorName() const;
         QString package() const;
+        QString marshalledName(Options options = NoOptions) const;
 };
 
 class MetaDylanEnumValue : public AbstractMetaEnumValue {
