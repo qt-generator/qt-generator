@@ -105,7 +105,7 @@ QString DylanGenerator::translateType(const AbstractMetaType *dylan_type, const 
     if (!dylan_type) {
         s = "void";
     } else if (dylan_type->isArray()) {
-        s = translateType(dylan_type->arrayElementType(), context) + "[]";
+        // TODO: use an array
     } else if (dylan_type->isEnum() || dylan_type->isFlags()) {
         if ((dylan_type->isEnum() &&
                 ((EnumTypeEntry *) dylan_type->typeEntry())->forceInteger()) ||
@@ -126,24 +126,7 @@ QString DylanGenerator::translateType(const AbstractMetaType *dylan_type, const 
             // Pointer
             s = dylan_type->name();
         } else if (dylan_type->isContainer()) {
-            s = dylan_type->typeEntry()->qualifiedTargetLangName();
-            if ((option & SkipTemplateParameters) == 0) {
-                s += '<';
-                QList<AbstractMetaType *> args = dylan_type->instantiations();
-                for (int i = 0; i < args.size(); ++i) {
-                    if (i != 0)
-                        s += ", ";
-                    bool isMultiMap = static_cast<const ContainerTypeEntry *>(dylan_type->typeEntry())->type() == ContainerTypeEntry::MultiMapContainer
-                                      && i == 1;
-                    if (isMultiMap)
-                        s += "dylan.util.List<";
-                    s += translateType(args.at(i), context, BoxedPrimitive);
-                    if (isMultiMap)
-                        s += ">";
-                }
-                s += '>';
-            }
-
+            // TODO: use a container
         } else {
             const TypeEntry *type = dylan_type->typeEntry();
             if (type->designatedInterface())
@@ -160,9 +143,13 @@ QString DylanGenerator::argumentString(const AbstractMetaFunction *dylan_functio
                                       uint options) {
     QString modified_type = dylan_function->typeReplaced(dylan_argument->argumentIndex() + 1);
     QString arg = "  parameter ";
+    QString argument_name = dylan_argument->argumentName();
 
     if ((options & SkipName) == 0) {
-        arg += dylan_argument->argumentName();
+        if (argument_name != "method")
+          arg += dylan_argument->argumentName();
+        else
+          arg += "mmethod";
     }
 
     arg += " :: ";
