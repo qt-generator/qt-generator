@@ -1153,8 +1153,6 @@ void DylanGenerator::write(QTextStream &s, const AbstractMetaClass *abstract_cla
     s << dylan_class->dylanName();
     libraryGenerator->addBinding(dylan_class->package(), dylan_class->dylanName());
 
-    // implementing interfaces...
-    bool implements = false;
     AbstractMetaClassList interfaces = dylan_class->interfaces();
 
     s << " (";
@@ -1164,14 +1162,10 @@ void DylanGenerator::write(QTextStream &s, const AbstractMetaClass *abstract_cla
     } else if (interfaces.isEmpty()){
         s << "<C-void*>";
     }
-    if (!interfaces.isEmpty() && dylan_class->isInterface())
-        s << ", ";
-    else {
-        implements = true;
-    }
     for (int i = 0; i < interfaces.size(); ++i) {
         MetaDylanClass *iface = (MetaDylanClass *)interfaces.at(i);
-        s << ", ";
+        if (i != 0)
+          s << ", ";
         s << iface->dylanName();
     }
 
