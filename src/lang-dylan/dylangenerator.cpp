@@ -1161,7 +1161,7 @@ void DylanGenerator::write(QTextStream &s, const AbstractMetaClass *abstract_cla
     if (!dylan_class->baseClassName().isEmpty()) {
         MetaDylanClass *base_class = (MetaDylanClass *)dylan_class->baseClass();
         s << base_class->dylanName();
-    } else {
+    } else if (interfaces.isEmpty()){
         s << "<C-void*>";
     }
     if (!interfaces.isEmpty() && dylan_class->isInterface())
