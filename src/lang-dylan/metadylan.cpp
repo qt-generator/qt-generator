@@ -128,6 +128,14 @@ QString MetaDylanEnum::dylanName() const {
     return "<" + name() + ">";
 }
 
+QString MetaDylanEnum::package() const {
+  MetaDylanClass *owner = (MetaDylanClass *)enclosingClass();
+  if (owner)
+    return owner->package();
+  else
+    return ""; // TODO: what to return?
+}
+
 QString MetaDylanClass::dylanName() const {
   return "<" + name() + ">";
 }

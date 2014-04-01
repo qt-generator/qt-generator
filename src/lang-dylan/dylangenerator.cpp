@@ -180,8 +180,10 @@ void DylanGenerator::writeIntegerEnum(QTextStream &s, const AbstractMetaEnum *ab
         if (dylan_enum->typeEntry()->isEnumValueRejected(value->name()))
             continue;
         s << "define constant " + value->dylanName(dylan_enum) << " = " << value->value() << ";\n";
+        libraryGenerator->addBinding(dylan_enum->package(), value->dylanName(dylan_enum));
     }
     s << "define constant " << dylan_enum->dylanName() << " = <C-int>;\n";
+    libraryGenerator->addBinding(dylan_enum->package(), dylan_enum->dylanName());
     s << endl;
 }
 
