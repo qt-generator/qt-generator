@@ -106,6 +106,7 @@ QString DylanGenerator::translateType(const AbstractMetaType *dylan_type, const 
         s = "void";
     } else if (dylan_type->isArray()) {
         // TODO: use an array
+        s = "<C-void*>";
     } else if (dylan_type->isEnum() || dylan_type->isFlags()) {
         if ((dylan_type->isEnum() &&
                 ((EnumTypeEntry *) dylan_type->typeEntry())->forceInteger()) ||
@@ -127,6 +128,7 @@ QString DylanGenerator::translateType(const AbstractMetaType *dylan_type, const 
             s = dylan_type->name();
         } else if (dylan_type->isContainer()) {
             // TODO: use a container
+            s = "<C-void*>";
         } else {
             const TypeEntry *type = dylan_type->typeEntry();
             if (type->designatedInterface())
