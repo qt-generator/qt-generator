@@ -146,10 +146,7 @@ QString DylanGenerator::argumentString(const AbstractMetaFunction *dylan_functio
     QString argument_name = dylan_argument->argumentName();
 
     if ((options & SkipName) == 0) {
-        if (argument_name != "method")
-          arg += dylan_argument->argumentName();
-        else
-          arg += "mmethod";
+        arg += dylan_argument->argumentName() + "_";
     }
 
     arg += " :: ";
@@ -712,7 +709,7 @@ void DylanGenerator::writeFunction(QTextStream &s, const AbstractMetaFunction *m
       libraryGenerator->addBinding(dylan_function->package(), dylan_function->dylanConstructorName());
     }
     if (!dylan_function->isStatic() && !dylan_function->isConstructor()) {
-      s << "  input parameter self :: " << dylan_owner_class->dylanName() << ";" << endl;;
+      s << "  input parameter self_ :: " << dylan_owner_class->dylanName() << ";" << endl;;
     }
     writeFunctionArguments(s, dylan_function, dylan_function->arguments().count());
     s << endl << "  c-name: \"" << dylan_function->marshalledName() << "\";" << endl;
