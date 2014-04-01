@@ -113,6 +113,14 @@ QString MetaDylanEnumValue::dylanName() const {
   return "$" + name();
 }
 
+QString MetaDylanEnumValue::dylanName(const AbstractMetaEnum *owner) const {
+  if (owner->enclosingClass()) {
+    return "$" + owner->enclosingClass()->name() + owner->name() + name();
+  } else {
+    return dylanName();
+  }
+}
+
 QString MetaDylanEnum::dylanName() const {
   if (enclosingClass())
     return "<" + enclosingClass()->name() + name() + ">";

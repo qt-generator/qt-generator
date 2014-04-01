@@ -72,6 +72,7 @@ class MetaDylanFunction : public AbstractMetaFunction {
 class MetaDylanEnumValue : public AbstractMetaEnumValue {
     public:
         QString dylanName() const;
+        QString dylanName(const AbstractMetaEnum *owner) const;
 };
 
 class MetaDylanEnum : public AbstractMetaEnum {
