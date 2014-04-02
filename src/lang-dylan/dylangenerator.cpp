@@ -125,7 +125,7 @@ QString DylanGenerator::translateType(const AbstractMetaType *dylan_type, const 
 
         } else if (dylan_type->isNativePointer()) {
             // Pointer
-            s = dylan_type->name();
+            s = "<" + dylan_type->name() + ">";
         } else if (dylan_type->isContainer()) {
             // TODO: use a container
             s = "<C-void*>";
