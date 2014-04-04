@@ -23,5 +23,5 @@ The bindings target should be one of the `build_*.xml` files in
 
 The generator language should currently be one of:
 
-* JAVA
-* DYLAN
+* `JAVA`: This will generate Java bindings.
+* `DYLAN`: This will generate Dylan bindings for use with [Open Dylan](http://opendylan.org/).
