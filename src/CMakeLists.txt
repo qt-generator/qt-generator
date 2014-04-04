@@ -164,6 +164,7 @@ FOREACH(typesystem ${qt_generator_TYPESYSTEMS})
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/typesystem/xml/${typesystem}-${LANG}.xml
             ${CMAKE_CURRENT_SOURCE_DIR}/typesystem/xml/${typesystem}-common.xml
             ${CMAKE_CURRENT_SOURCE_DIR}/typesystem/xml/merge.xsl
+    VERBATIM
   )
   SET(generated_xml_files ${generated_xml_files} ${CMAKE_BINARY_DIR}/${typesystem}.xml)
 ENDFOREACH()
