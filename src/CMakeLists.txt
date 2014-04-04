@@ -179,5 +179,6 @@ ADD_CUSTOM_TARGET(bindings
     --input-directory=${CMAKE_CURRENT_SOURCE_DIR}:${CMAKE_CURRENT_SOURCE_DIR}/typesystem/xml:${CMAKE_BINARY_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/targets/qtjambi_masterinclude.h
     ${CMAKE_CURRENT_SOURCE_DIR}/targets/build_core.xml
+  VERBATIM
 )
 ADD_DEPENDENCIES(bindings qt-generator)
