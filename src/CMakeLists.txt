@@ -2,6 +2,13 @@ PROJECT(qt_generator CXX C)
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 FIND_PACKAGE(Qt4 REQUIRED)
 
+OPTION(GENERATOR_LANG "Which generator to use." OFF)
+IF(GENERATOR_LANG STREQUAL "DYLAN")
+    ADD_DEFINITIONS(-DLANG_DYLAN)
+ELSE()
+    ADD_DEFINITIONS(-DLANG_JAVA)
+ENDIF()
+
 SET(qt_generator_SOURCES
     abstractmetabuilder.cpp
     abstractmetalang.cpp

@@ -26,17 +26,15 @@ Wrapper::Wrapper(int argc, char *argv[]) :
         debugCppMode(DEBUGLOG_DEFAULTS) {
 
     args = parseArguments(argc, argv);
+#if defined(LANG_JAVA)
     QString lang = "java";
-    if (args.contains("lang")) {
-        lang = args.value("lang");
-    }
-    if (lang == "java") {
-        gs = GeneratorSetJava::getInstance();
-    } else if (lang == "dylan") {
-        gs = GeneratorSetDylan::getInstance();
-    } else {
-      qFatal("Unknown language: %s", qPrintable(lang));
-    }
+    gs = GeneratorSetJava::getInstance();
+#elif defined(LANG_DYLAN)
+    QString lang = "dylan";
+    gs = GeneratorSetDylan::getInstance();
+#else
+    qFatal("Unknown language: %s", qPrintable(lang));
+#endif
     handleArguments();
     assignVariables();
 }
@@ -287,8 +285,7 @@ void Wrapper::displayHelp(GeneratorSet* generatorSet) {
            "  --preproc-stage2                          \n"
            "  --target-platform-arm-cpu                 \n"
            "  -Dname[=definition]                       \n"
-           "  -Uname                                    \n"
-           "  --lang=[java|dylan]                       \n",
+           "  -Uname                                    \n",
            path_splitter, path_splitter);
 
     printf("%s", qPrintable(generatorSet->usage()));

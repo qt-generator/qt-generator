@@ -249,7 +249,6 @@ class TypeSystemTypeEntry : public TypeEntry {
 };
 
 
-#ifdef QT_LANG_JAVA
 class ThreadTypeEntry : public TypeEntry {
     public:
         ThreadTypeEntry() : TypeEntry("QThread", ThreadType) {
@@ -266,7 +265,6 @@ class ThreadTypeEntry : public TypeEntry {
             return strings_java_lang;
         }
 };
-#endif /* QT_LANG_JAVA */
 
 class VoidTypeEntry : public TypeEntry {
     public:

@@ -52,7 +52,7 @@ TypeDatabase::TypeDatabase() : m_suppressWarnings(true), m_includeEclipseWarning
         addType(wrapper);
     }
 
-#ifdef QT_LANG_JAVA
+#ifdef LANG_JAVA
     addType(new ThreadTypeEntry());
 #endif
     addType(new VoidTypeEntry());
