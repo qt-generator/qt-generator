@@ -173,12 +173,13 @@ ADD_CUSTOM_TARGET(generate-merged-xml
                   DEPENDS ${generated_xml_files})
 ADD_DEPENDENCIES(qt-generator generate-merged-xml)
 
+SET(BINDINGS_TARGET build_core.xml CACHE STRING "Which target file from src/targets/build_*.xml to use")
 ADD_CUSTOM_TARGET(bindings
   COMMAND qt-generator
     --qt-include-directory=${QT_HEADERS_DIR}
     --input-directory=${CMAKE_CURRENT_SOURCE_DIR}:${CMAKE_CURRENT_SOURCE_DIR}/typesystem/xml:${CMAKE_BINARY_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/targets/qtjambi_masterinclude.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/targets/build_core.xml
+    ${CMAKE_CURRENT_SOURCE_DIR}/targets/${BINDINGS_TARGET}
   VERBATIM
 )
 ADD_DEPENDENCIES(bindings qt-generator)
