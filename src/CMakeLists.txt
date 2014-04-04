@@ -129,3 +129,43 @@ ADD_EXECUTABLE(qt-generator
                ${qt_generator_HEADERS_MOC}
                ${qt_generator_RESOURCES_RCC})
 TARGET_LINK_LIBRARIES(qt-generator ${QT_LIBRARIES})
+
+SET(qt_generator_TYPESYSTEMS
+    typesystem_core
+    typesystem_dbus
+    typesystem_declarative
+    typesystem_designer
+    typesystem_gui
+    typesystem_help
+    typesystem_multimedia
+    typesystem_network
+    typesystem_opengl
+    typesystem_phonon
+    typesystem_script
+    typesystem_scripttools
+    typesystem_sql
+    typesystem_svg
+    typesystem_test
+    typesystem_webkit
+    typesystem_xml
+    typesystem_xmlpatterns
+)
+SET(generated_xml_files)
+FOREACH(typesystem ${qt_generator_TYPESYSTEMS})
+  ADD_CUSTOM_COMMAND(
+    OUTPUT ${CMAKE_BINARY_DIR}/${typesystem}.xml
+    COMMAND xsltproc
+              -o ${CMAKE_BINARY_DIR}/${typesystem}.xml
+              --stringparam source ${CMAKE_CURRENT_SOURCE_DIR}/typesystem/xml/${typesystem}-java.xml
+              ${CMAKE_CURRENT_SOURCE_DIR}/typesystem/xml/merge.xsl
+              ${CMAKE_CURRENT_SOURCE_DIR}/typesystem/xml/${typesystem}-common.xml
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/typesystem/xml/${typesystem}-java.xml
+            ${CMAKE_CURRENT_SOURCE_DIR}/typesystem/xml/${typesystem}-common.xml
+            ${CMAKE_CURRENT_SOURCE_DIR}/typesystem/xml/merge.xsl
+  )
+  SET(generated_xml_files ${generated_xml_files} ${CMAKE_BINARY_DIR}/${typesystem}.xml)
+ENDFOREACH()
+
+ADD_CUSTOM_TARGET(generate-merged-xml
+                  DEPENDS ${generated_xml_files})
+ADD_DEPENDENCIES(qt-generator generate-merged-xml)
