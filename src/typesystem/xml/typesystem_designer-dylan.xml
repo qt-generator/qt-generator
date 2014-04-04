@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<typesystem package="com.trolltech.tools.designer" default-superclass="com.trolltech.qt.internal.QtJambiObject">
+
+    <inject-code>
+        com.trolltech.qt.Utilities.loadQtLibrary("QtCore");
+        com.trolltech.qt.Utilities.loadQtLibrary("QtGui");
+        com.trolltech.qt.Utilities.loadQtLibrary("QtXml");
+        if(com.trolltech.qt.Utilities.isAvailableQtLibrary("QtScript"))
+            com.trolltech.qt.Utilities.loadQtLibrary("QtScript");    // load if exists
+        com.trolltech.qt.Utilities.loadQtLibrary("QtDesigner");
+        com.trolltech.qt.Utilities.loadQtLibrary("QtDesignerComponents");
+    </inject-code>
+
+    <primitive-type name="qdesigner_internal::FlagType" java-name="int" preferred-conversion="no" jni-name="jint" />
+    <primitive-type name="qdesigner_internal::EnumType" java-name="int" preferred-conversion="no" jni-name="jint" />
+
+</typesystem>
