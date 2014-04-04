@@ -5,8 +5,10 @@ FIND_PACKAGE(Qt4 REQUIRED)
 OPTION(GENERATOR_LANG "Which generator to use." OFF)
 IF(GENERATOR_LANG STREQUAL "DYLAN")
     ADD_DEFINITIONS(-DLANG_DYLAN)
+    SET(LANG dylan)
 ELSE()
     ADD_DEFINITIONS(-DLANG_JAVA)
+    SET(LANG java)
 ENDIF()
 
 SET(qt_generator_SOURCES
@@ -156,10 +158,10 @@ FOREACH(typesystem ${qt_generator_TYPESYSTEMS})
     OUTPUT ${CMAKE_BINARY_DIR}/${typesystem}.xml
     COMMAND xsltproc
               -o ${CMAKE_BINARY_DIR}/${typesystem}.xml
-              --stringparam source ${CMAKE_CURRENT_SOURCE_DIR}/typesystem/xml/${typesystem}-java.xml
+              --stringparam source ${CMAKE_CURRENT_SOURCE_DIR}/typesystem/xml/${typesystem}-${LANG}.xml
               ${CMAKE_CURRENT_SOURCE_DIR}/typesystem/xml/merge.xsl
               ${CMAKE_CURRENT_SOURCE_DIR}/typesystem/xml/${typesystem}-common.xml
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/typesystem/xml/${typesystem}-java.xml
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/typesystem/xml/${typesystem}-${LANG}.xml
             ${CMAKE_CURRENT_SOURCE_DIR}/typesystem/xml/${typesystem}-common.xml
             ${CMAKE_CURRENT_SOURCE_DIR}/typesystem/xml/merge.xsl
   )
